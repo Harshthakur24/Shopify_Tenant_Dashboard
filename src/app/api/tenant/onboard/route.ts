@@ -9,6 +9,7 @@ export async function POST(request: NextRequest) {
 
   const body = await request.json();
   const { shopDomain, accessToken, apiKey, apiSecret } = body as {
+
     shopDomain?: string;
     accessToken?: string;
     apiKey?: string;
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   const apiSecretToUse = apiSecret || process.env.SHOPIFY_API_SECRET || undefined;
 
   await prisma.tenant.update({
-    where: { id: (claims as any).tenantId },
+    where: { id: claims.tenantId },
     data: { shopDomain: domain, accessToken: tokenToUse, apiKey: apiKeyToUse, apiSecret: apiSecretToUse },
   });
 

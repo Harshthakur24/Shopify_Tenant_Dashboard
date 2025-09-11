@@ -1,178 +1,253 @@
-"use client";
-import { useEffect, useMemo, useState } from "react";
-import toast from "react-hot-toast";
-import {
-    ResponsiveContainer,
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip as RTooltip,
-    AreaChart,
-    Area,
-    BarChart,
-    Bar,
-    Legend,
-} from "recharts";
-import { TrendingUp, Users2, Package, ShoppingCart } from "lucide-react";
+'use client'
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import { Loader2, Package } from "lucide-react";
 
-type Metrics = {
-    customers: number;
-    products: number;
-    orders: number;
-    revenue: number;
-    topCustomers: { id: string; firstName: string | null; lastName: string | null; email: string | null; totalSpend: number | string }[];
-    byDate: { date: string; orders: number; revenue: number }[];
+type ShopifyVariant = {
+    id: number | string;
+    title: string;
+    price: string;
 };
 
-export default function DashboardPage() {
-    const [from, setFrom] = useState<string>("");
-    const [to, setTo] = useState<string>("");
-    const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<Metrics | null>(null);
+type ShopifyOption = {
+    id: number | string;
+    name: string;
+    values: string[];
+};
 
-    async function load() {
-        setLoading(true);
-        const params = new URLSearchParams();
-        if (from) params.set("from", from);
-        if (to) params.set("to", to);
-        const res = await fetch(`/api/metrics?${params.toString()}`);
-        const json = await res.json();
-        setData(json);
-        if (res.headers.get("x-demo-data") === "true" || json.demo) {
-            toast("Showing demo metrics (DB not connected)", { icon: "🔌" });
-        } else {
-            toast.success("Metrics loaded");
-        }
-        setLoading(false);
-    }
+type ShopifyImage = {
+    src?: string;
+    alt?: string | null;
+};
+
+type ShopifyProduct = {
+    id: number | string;
+    title: string;
+    body_html?: string;
+    status?: string;
+    vendor?: string;
+    product_type?: string;
+    handle?: string;
+    image?: ShopifyImage | null;
+    images?: ShopifyImage[];
+    options?: ShopifyOption[];
+    variants: ShopifyVariant[];
+};
+
+export default function ShopifyDashboard() {
+    const [products, setProducts] = useState<ShopifyProduct[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [search, setSearch] = useState("");
+    const [category, setCategory] = useState<string>("all");
+    const [sort, setSort] = useState<string>("recent");
 
     useEffect(() => {
-        load();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        const fetchProducts = async (): Promise<void> => {
+            try {
+                const res = await fetch('/api/shopify/products');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
+                setProducts(Array.isArray(json?.products) ? json.products : []);
+            } catch (e) {
+                setError(`Failed to load products: ${String((e as Error).message ?? e)}`);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
     }, []);
 
-    const totals = useMemo(() => ({
-        customers: data?.customers ?? 0,
-        products: data?.products ?? 0,
-        orders: data?.orders ?? 0,
-        revenue: data?.revenue ?? 0,
-        avgOrder: (data && data.orders > 0) ? (data.revenue / data.orders) : 0,
-    }), [data]);
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-white">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+            </div>
+        );
+    }
 
-    const spark = useMemo(() => (data?.byDate ?? []).slice(-10), [data]);
+    if (error) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-white px-4">
+                <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-4 text-red-700">
+                    {error}
+                </div>
+            </div>
+        );
+    }
+
+    // Derived metrics + filters
+    const categories = Array.from(new Set(products.map(p => p.product_type || "Uncategorized")));
+    const totalProducts = products.length;
+    const activeProducts = products.filter(p => p.status === "active").length;
+    const uniqueVendors = new Set(products.map(p => p.vendor || "Unknown")).size;
+    const avgPrice = products.length
+        ? products.reduce((sum, p) => sum + Number(p.variants?.[0]?.price || 0), 0) / products.length
+        : 0;
+
+    const filtered = products
+        .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
+        .filter(p => category === "all" ? true : (p.product_type || "Uncategorized") === category)
+        .sort((a, b) => {
+            if (sort === "price-asc") return Number(a.variants?.[0]?.price || 0) - Number(b.variants?.[0]?.price || 0);
+            if (sort === "price-desc") return Number(b.variants?.[0]?.price || 0) - Number(a.variants?.[0]?.price || 0);
+            return 0;
+        });
 
     return (
-        <div className="min-h-dvh bg-white text-black dark:bg-neutral-950 dark:text-white">
-            <div className="mx-auto max-w-7xl px-4 py-6">
-                <header className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Insights Dashboard</h1>
-                        <p className="text-sm text-neutral-500 dark:text-neutral-400">Track your multi-tenant Shopify KPIs</p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900" />
-                        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-900" />
-                        <button onClick={load} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Apply</button>
-                        <button onClick={() => {
-                            const root = document.documentElement;
-                            const isDark = root.classList.contains("dark");
-                            if (isDark) {
-                                root.classList.remove("dark");
-                                root.classList.add("light");
-                                toast("Switched to Light Mode", { icon: "🌤️" });
-                            } else {
-                                root.classList.remove("light");
-                                root.classList.add("dark");
-                                toast("Switched to Dark Mode", { icon: "🌙" });
-                            }
-                        }} className="rounded-md border border-neutral-300 px-3 py-2 text-sm hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">Toggle Theme</button>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 p-6 sm:p-8">
+            <div className="pointer-events-none absolute inset-0 -z-10">
+                <div className="absolute right-1/3 top-10 h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
+                <div className="absolute left-1/4 bottom-10 h-72 w-72 rounded-full bg-blue-400/10 blur-[100px]" />
+                <div className="absolute right-1/4 bottom-1/3 h-60 w-60 rounded-full bg-indigo-500/10 blur-[80px]" />
+            </div>
+            <div className="mx-auto max-w-7xl">
+                <header className="mb-6">
+                    <div className="rounded-2xl border border-blue-100/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
+                        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+                            <div>
+                                <h1 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+                                    Shopify Store Dashboard
+                                </h1>
+                                <div className="mt-3 flex flex-wrap gap-3">
+                                    <div className="rounded-lg bg-blue-50 px-3 py-1">
+                                        <span className="text-xs font-medium text-blue-600">Total Products</span>
+                                        <p className="text-lg font-semibold text-blue-700">{totalProducts}</p>
+                                    </div>
+                                    <div className="rounded-lg bg-green-50 px-3 py-1">
+                                        <span className="text-xs font-medium text-green-600">Active Products</span>
+                                        <p className="text-lg font-semibold text-green-700">{activeProducts}</p>
+                                    </div>
+                                    <div className="rounded-lg bg-purple-50 px-3 py-1">
+                                        <span className="text-xs font-medium text-purple-600">Vendors</span>
+                                        <p className="text-lg font-semibold text-purple-700">{uniqueVendors}</p>
+                                    </div>
+                                    <div className="rounded-lg bg-indigo-50 px-3 py-1">
+                                        <span className="text-xs font-medium text-indigo-600">Average Price</span>
+                                        <p className="text-lg font-semibold text-indigo-700">₹{Math.round(avgPrice).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                                <input
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Search products..."
+                                    className="w-full rounded-xl border border-blue-100/50 bg-white/80 px-4 py-2.5 text-sm shadow-sm backdrop-blur-lg transition placeholder:text-neutral-400 hover:border-blue-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 sm:w-64"
+                                />
+                                <select
+                                    value={category}
+                                    onChange={(e) => setCategory(e.target.value)}
+                                    className="rounded-xl border border-blue-100/50 bg-white/80 px-4 py-2.5 text-sm shadow-sm backdrop-blur-lg transition hover:border-blue-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                >
+                                    <option value="all">All categories</option>
+                                    {categories.map((c) => (
+                                        <option key={c} value={c}>{c}</option>
+                                    ))}
+                                </select>
+                                <select
+                                    value={sort}
+                                    onChange={(e) => setSort(e.target.value)}
+                                    className="rounded-xl border border-blue-100/50 bg-white/80 px-4 py-2.5 text-sm shadow-sm backdrop-blur-lg transition hover:border-blue-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                >
+                                    <option value="recent">Sort: Recent</option>
+                                    <option value="price-asc">Price: Low → High</option>
+                                    <option value="price-desc">Price: High → Low</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </header>
 
-                {/* KPI Cards with sparklines */}
-                <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <KpiCard title="Customers" value={totals.customers.toLocaleString()} icon={<Users2 className="h-4 w-4" />} data={spark.map(d=>d.orders)} />
-                    <KpiCard title="Products" value={totals.products.toLocaleString()} icon={<Package className="h-4 w-4" />} data={spark.map(d=>d.orders)} />
-                    <KpiCard title="Orders" value={totals.orders.toLocaleString()} icon={<ShoppingCart className="h-4 w-4" />} data={spark.map(d=>d.orders)} accent="blue" />
-                    <KpiCard title="Revenue" value={`₹${totals.revenue.toLocaleString()}`} icon={<TrendingUp className="h-4 w-4" />} data={spark.map(d=>d.revenue)} accent="emerald" />
-                </section>
+                <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {filtered.map((product) => (
+                        <article key={product.id} className="group overflow-hidden rounded-2xl border border-blue-100/50 bg-white/80 shadow-lg transition duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-white/90">
+                            <div className="relative h-64 w-full bg-neutral-100">
+                                {product.image?.src ? (
+                                    <Image
+                                        src={product.image.src}
+                                        alt={product.image.alt || product.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        className="object-cover transition duration-300 group-hover:scale-105"
+                                    />
+                                ) : (
+                                    <div className="flex h-full w-full items-center justify-center text-neutral-400">
+                                        <Package className="h-8 w-8" />
+                                    </div>
+                                )}
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/20 to-transparent p-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-700'}`}>
+                                            {product.status || 'draft'}
+                                        </span>
+                                        <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                                            ₹{Number(product.variants?.[0]?.price || 0).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-4">
+                                <div className="flex items-start justify-between gap-2">
+                                    <h2 className="line-clamp-1 text-lg font-semibold text-neutral-900">{product.title}</h2>
+                                    {product.vendor && (
+                                        <span className="whitespace-nowrap text-xs text-neutral-500">{product.vendor}</span>
+                                    )}
+                                </div>
+                                <div
+                                    className="prose prose-sm mt-2 max-w-none text-neutral-600 line-clamp-3"
+                                    dangerouslySetInnerHTML={{ __html: product.body_html || '' }}
+                                />
 
-                <section className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 lg:col-span-2">
-                        <h2 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">Orders & Revenue by Date</h2>
-                        {loading ? (
-                            <div className="h-60 animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-800" />
-                        ) : (
-                            <div className="h-60">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={data?.byDate ?? []} margin={{ left: 8, right: 8, top: 10 }}>
-                                        <CartesianGrid strokeDasharray="3 3" className="stroke-neutral-200 dark:stroke-neutral-800" />
-                                        <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                                        <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
-                                        <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} />
-                                        <RTooltip />
-                                        <Legend />
-                                        <Line yAxisId="left" type="monotone" dataKey="orders" name="Orders" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                                        <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="#10b981" strokeWidth={2} dot={false} />
-                                    </LineChart>
-                                </ResponsiveContainer>
+                                {product.options && product.options.length > 0 && (
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {product.options.flatMap((opt) =>
+                                            (opt.values || []).map((val, idx) => (
+                                                <span key={`${String(opt.id)}-${idx}`} className="inline-flex items-center rounded-md bg-blue-100/50 px-2 py-1 text-xs font-medium text-blue-700 backdrop-blur-lg">
+                                                    {val}
+                                                </span>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="mt-4 rounded-lg border border-neutral-200/50 bg-white/50">
+                                    {(product.variants || []).map((variant) => (
+                                        <div key={variant.id} className="flex items-center justify-between px-3 py-2 first:rounded-t-lg last:rounded-b-lg last:border-0 border-b border-neutral-200">
+                                            <span className="text-sm text-neutral-700">{variant.title}</span>
+                                            <span className="text-sm font-semibold text-blue-600">₹{Number(variant.price).toLocaleString()}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="mt-4 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <a
+                                            href={`https://xeno-assignment-store.myshopify.com/products/${product.handle ?? ''}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:translate-y-[-1px] hover:shadow-md active:translate-y-[1px]"
+                                        >
+                                            View Product
+                                        </a>
+                                        <button
+                                            className="rounded-xl border border-blue-200 bg-white/80 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm backdrop-blur-lg transition hover:border-blue-300 hover:bg-white hover:translate-y-[-1px] hover:shadow-md active:translate-y-[1px]"
+                                        >
+                                            Manage Stock
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        )}
-                    </div>
-                    <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-                        <h2 className="mb-3 text-sm font-semibold text-neutral-700 dark:text-neutral-200">Top 5 Customers by Spend</h2>
-                        {loading ? (
-                            <div className="h-60 animate-pulse rounded-md bg-neutral-100 dark:bg-neutral-800" />
-                        ) : (
-                            <div className="h-60">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart data={(data?.topCustomers ?? []).map((c) => ({
-                                        name: (c.firstName || c.lastName ? `${c.firstName ?? ""} ${c.lastName ?? ""}`.trim() : (c.email ?? "Unknown")),
-                                        spend: Number(c.totalSpend),
-                                    }))}>
-                                        <CartesianGrid strokeDasharray="3 3" className="stroke-neutral-200 dark:stroke-neutral-800" />
-                                        <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                                        <YAxis tick={{ fontSize: 12 }} />
-                                        <RTooltip />
-                                        <Bar dataKey="spend" fill="#2563eb" radius={[6, 6, 0, 0]} />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        )}
-                    </div>
+                        </article>
+                    ))}
                 </section>
-            </div>
-        </div>
-    );
-}
-// KPI Card with sparkline
-function KpiCard({ title, value, icon, data, accent }: { title: string; value: string; icon: React.ReactNode; data: number[]; accent?: "blue" | "emerald" }) {
-    const color = accent === "emerald" ? "#10b981" : "#3b82f6";
-    const areaColor = accent === "emerald" ? "#34d399" : "#60a5fa";
-    const points = (data ?? []).map((y, i) => ({ x: i, y }));
-    return (
-        <div className="relative overflow-hidden rounded-xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
-            <div className="flex items-center justify-between">
-                <p className="text-xs uppercase text-neutral-500">{title}</p>
-                <span className="text-neutral-400">{icon}</span>
-            </div>
-            <p className="mt-2 text-3xl font-semibold">{value}</p>
-            <div className="mt-2 h-14">
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={points} margin={{ left: 0, right: 0, top: 4, bottom: 0 }}>
-                        <defs>
-                            <linearGradient id={`grad-${title}`} x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor={areaColor} stopOpacity={0.5} />
-                                <stop offset="100%" stopColor={areaColor} stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <XAxis dataKey="x" hide />
-                        <YAxis hide />
-                        <Area type="monotone" dataKey="y" stroke={color} strokeWidth={2} fill={`url(#grad-${title})`} />
-                    </AreaChart>
-                </ResponsiveContainer>
+                {filtered.length === 0 && (
+                    <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-blue-100/50 bg-white/80 p-8 text-center backdrop-blur-xl">
+                        <Package className="h-12 w-12 text-blue-200" />
+                        <h3 className="mt-4 text-lg font-semibold text-neutral-900">No products found</h3>
+                        <p className="mt-1 text-sm text-neutral-600">Try adjusting your search or filters</p>
+                    </div>
+                )}
             </div>
         </div>
     );
