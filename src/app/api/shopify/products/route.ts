@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
         take: 1000,
       });
 
-      const products = db.map((p) => ({
+      const products = db.map((p: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
         id: p.shopId,
         title: p.title,
         // Minimal shape used by the dashboard
