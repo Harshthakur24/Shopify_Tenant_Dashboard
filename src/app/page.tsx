@@ -11,32 +11,88 @@ import { ArrowRight } from "lucide-react";
 
 export default function Home() {
   const featuresRef = useRef<HTMLDivElement | null>(null);
-  const heroImage = "/globe.svg";
-  const dessertImage = "/window.svg";
-  const healthyImage = "/vercel.svg";
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const heroImage = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80";
+  const dashboardImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=80";
+  const analyticsImage = "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=1200&q=80";
+  const teamImage = "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80";
   return (
-    <div className="min-h-dvh bg-white text-neutral-900">
+    <div className="min-h-dvh bg-white text-neutral-900 relative">
+      {/* Global Grid Background */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(0,0,0,0.15) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.15) 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+          backgroundPosition: "0 0, 0 0",
+        }}
+      />
       {/* Top navbar with auto-hide */}
       <AutoHideNavbar />
       {/* Hero */}
-      <section className="relative isolate overflow-hidden px-4 py-24 sm:py-28">
-        {/* Subtle blue background accents */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute right-1/4 top-10 h-40 w-40 rounded-full bg-blue-500/10 blur-3xl" />
-          <div className="absolute left-1/4 bottom-10 h-40 w-40 rounded-full bg-blue-400/10 blur-3xl" />
+      <section className="relative isolate overflow-hidden px-4 py-24 sm:py-32 z-10">
+        {/* Hero Background Image */}
+        <div className="absolute inset-0 -z-20">
+          <Image
+            src={heroImage}
+            alt="Analytics Dashboard Background"
+            fill
+            className="object-cover opacity-[0.05]"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-white/95 to-blue-50/80" />
         </div>
-        {/* Black grid overlay */}
-        <div
-          className="pointer-events-none absolute inset-0 -z-10 opacity-10"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, #000 1px, transparent 1px), linear-gradient(to bottom, #000 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
+
+        {/* Floating Elements */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <motion.div
+            animate={{
+              y: [0, -20, 0],
+              rotate: [0, 5, 0]
+            }}
+            transition={{
+              duration: 6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute right-1/4 top-20 h-32 w-32 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 blur-xl"
+          />
+          <motion.div
+            animate={{
+              y: [0, 15, 0],
+              rotate: [0, -3, 0]
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 1
+            }}
+            className="absolute left-1/4 bottom-20 h-40 w-40 rounded-full bg-gradient-to-br from-purple-500/15 to-pink-500/15 blur-2xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.1, 1],
+              opacity: [0.3, 0.6, 0.3]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 2
+            }}
+            className="absolute top-1/4 right-1/3 h-24 w-24 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 blur-lg"
+          />
+        </div>
 
         <div className="mx-auto max-w-7xl">
-          <div className="relative mx-auto max-w-3xl text-center">
+          <div className="relative mx-auto max-w-4xl text-center">
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-1.5 text-sm font-medium text-blue-700">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-75"></span>
@@ -44,27 +100,24 @@ export default function Home() {
               </span>
               Shopify Data Ingestion & Insights
             </span>
-            <h1 className="mt-6 text-7xl font-bold tracking-tight sm:text-7xl [text-wrap:balance]">
-              <span className="block">Build <span className="text-blue-600">better</span></span>
-              <span className="block">decisions with</span>
-              <span className="block">
-                <span className="ml-2 inline-block bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 bg-clip-text text-transparent [animation:gradient_123_infinite_4s_ease-in-out_infinite]">
-                  <TypeAnimation
-                    sequence={[
-                      "Smart Store",
-                      2000,
-                      "Dashboard",
-                      2000,
-                      "Analytics",
-                      2000,
-                      "Metrics",
-                      2000,
-                    ]}
-                    speed={40}
-                    repeat={Infinity}
-                  />
-                </span>
-              </span>
+            <h1 className="mt-6 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] [text-wrap:balance]">
+              <span className="block">Transform Your <span className="text-blue-600">Shopify</span></span>
+              <span className="block">Store with <span className="text-blue-600 bg-clip-text [animation:gradient_123_infinite_4s_ease-in-out_infinite]">
+                <TypeAnimation
+                  sequence={[
+                    "Smart Analytics",
+                    2000,
+                    "Real-time Data",
+                    2000,
+                    "Smart Metrics",
+                    2000,
+                    "Stasistics",
+                    2000,
+                  ]}
+                  speed={40}
+                  repeat={Infinity}
+                />
+              </span></span>
             </h1>
 
             <style jsx>{`
@@ -80,7 +133,7 @@ export default function Home() {
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/dashboard"
-                className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-blue-600 px-6 py-3.5 font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
+                className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-blue-600 px-6 py-5 font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
               >
                 <button className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-full hover:scale-105 hover:shadow-lg duration-300 hover:pointer-cursor" />
                 <span className="relative flex items-center gap-2 rounded-full">
@@ -92,7 +145,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/login"
-                className="group inline-flex items-center justify-center rounded-full border border-neutral-200 bg-white px-6 py-3.5 font-semibold text-neutral-900 transition-all hover:bg-neutral-50 hover:shadow-lg hover:cursor-pointer"
+                className="group inline-flex items-center justify-center rounded-full border border-neutral-200 bg-white px-6 py-5 font-semibold text-neutral-900 transition-all hover:bg-neutral-50 hover:shadow-lg hover:cursor-pointer"
               >
                 <span className="relative flex items-center gap-2">
                   Login
@@ -108,35 +161,35 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50" id="features">
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50 relative z-10" id="features">
         <div>
           {[
             {
               title: "One‑click Shopify onboarding",
               description:
                 "Connect your store with an Admin API token. We immediately fetch products, orders and customers so you can start analyzing within minutes.",
-              image: heroImage,
+              image: dashboardImage,
               reverse: false,
             },
             {
               title: "Reliable data sync",
               description:
                 "Background jobs and webhook hooks keep your catalog and order data up‑to‑date while respecting Shopify rate limits.",
-              image: dessertImage,
+              image: analyticsImage,
               reverse: true,
             },
             {
               title: "Beautiful, actionable analytics",
               description:
                 "Understand revenue, AOV, top products and repeat customers with a responsive, mobile‑first dashboard.",
-              image: healthyImage,
+              image: heroImage,
               reverse: false,
             },
             {
               title: "Multi‑tenant and production‑ready",
               description:
                 "Tenant isolation, JWT auth and Prisma/Postgres built‑in, so you can safely host multiple stores from a single instance.",
-              image: healthyImage,
+              image: teamImage,
               reverse: true,
             },
           ].map((section, index) => (
@@ -206,32 +259,128 @@ export default function Home() {
       </section>
 
       {/* Statistics Section */}
-      <section className="bg-black text-white py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      <section className="bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white py-24 relative overflow-hidden z-10">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='7' cy='7' r='1'/%3E%3Ccircle cx='53' cy='7' r='1'/%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3Ccircle cx='7' cy='53' r='1'/%3E%3Ccircle cx='53' cy='53' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }} />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 relative">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+              Trusted by Growing Businesses
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Join thousands of merchants who use our platform to make data-driven decisions
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              { number: 1000, label: "Active Users", suffix: "+" },
-              { number: 5000, label: "Recipes", suffix: "+" },
-              { number: 100, label: "Expert Chefs", suffix: "+" },
+              { number: 2500, label: "Active Stores", suffix: "+" },
+              { number: 1200000, label: "Products Synced", suffix: "+" },
+              { number: 850000, label: "Orders Tracked", suffix: "+" },
+              { number: 99.9, label: "Uptime", suffix: "%" },
             ].map((stat, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="text-center"
+                className="text-center p-8 rounded-2xl bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/20 transition-all duration-300"
               >
-                <div className="text-5xl font-bold mb-2">
-                  <CountUp
-                    start={0}
-                    end={stat.number}
-                    duration={2}
-                    suffix={stat.suffix}
-                    enableScrollSpy
-                  />
+                <div className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-br from-white to-gray-300 bg-clip-text text-transparent">
+                  {isMounted ? (
+                    <CountUp
+                      start={0}
+                      end={stat.number}
+                      duration={2.5}
+                      suffix={stat.suffix}
+                      enableScrollSpy
+                      separator=","
+                    />
+                  ) : (
+                    <span>{stat.number.toLocaleString()}{stat.suffix}</span>
+                  )}
                 </div>
-                <div className="text-gray-400">{stat.label}</div>
+                <div className="text-gray-300 font-medium text-lg">{stat.label}</div>
+                <div className="mt-4 h-1 w-16 mx-auto bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-24 bg-gradient-to-br from-blue-50 via-white to-indigo-50 relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+              What Our Customers Say
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Don&apos;t just take our word for it - see what store owners have to say about our platform
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Sarah Chen",
+                role: "Founder, TechStyle Co.",
+                avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&crop=faces&w=100&h=100&q=80",
+                content: "This platform transformed how we understand our customers. The insights helped us increase revenue by 40% in just 3 months.",
+                rating: 5
+              },
+              {
+                name: "Marcus Johnson",
+                role: "E-commerce Manager, Urban Threads",
+                avatar: "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&crop=faces&w=100&h=100&q=80",
+                content: "The real-time sync and beautiful analytics dashboard made data-driven decisions effortless. Best investment we've made.",
+                rating: 5
+              },
+              {
+                name: "Emily Rodriguez",
+                role: "CEO, Artisan Crafts",
+                avatar: "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&crop=faces&w=100&h=100&q=80",
+                content: "Setup was incredibly simple, and within minutes we had all our Shopify data beautifully visualized. The team loves it!",
+                rating: 5
+              }
+            ].map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300"
+              >
+                <div className="flex items-center gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-6 leading-relaxed italic">
+                  &ldquo;{testimonial.content}&rdquo;
+                </p>
+                <div className="flex items-center gap-4">
+                  <Image
+                    src={testimonial.avatar}
+                    alt={testimonial.name}
+                    width={48}
+                    height={48}
+                    className="rounded-full object-cover"
+                  />
+                  <div>
+                    <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
+                    <p className="text-sm text-gray-600">{testimonial.role}</p>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
@@ -283,6 +432,87 @@ export default function Home() {
           </div>
         </div>
       </section> */}
+
+      {/* Final CTA Section */}
+      <section className="py-24 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 relative overflow-hidden z-10">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+        </div>
+
+        <div className="max-w-4xl mx-auto px-6 text-center relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">
+              Ready to Transform Your
+              <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                Shopify Analytics?
+              </span>
+            </h2>
+            <p className="text-xl text-blue-100 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Join over 2,500+ successful store owners who are making smarter decisions with our powerful analytics platform.
+              Start your free trial today and see the difference in minutes.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Link
+                href="/signup"
+                className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-blue-700 bg-white rounded-2xl shadow-xl transition-all hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/50"
+              >
+                <span className="flex items-center gap-3">
+                  Start Free Trial
+                  <motion.div
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <ArrowRight className="w-5 h-5" />
+                  </motion.div>
+                </span>
+              </Link>
+
+              <Link
+                href="/dashboard"
+                className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white border-2 border-white/30 rounded-2xl backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/50"
+              >
+                <span className="flex items-center gap-3">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  View Live Demo
+                </span>
+              </Link>
+            </div>
+
+            <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-blue-200">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm">No credit card required</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm">Setup in under 5 minutes</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span className="text-sm">24/7 premium support</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );
