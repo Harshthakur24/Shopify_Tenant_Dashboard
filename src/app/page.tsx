@@ -306,44 +306,245 @@ function AutoHideNavbar() {
     <>
       <div className={`fixed inset-x-0 top-0 z-40 transition-transform duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
         <div className="mx-auto max-w-7xl px-4">
-          <div className="mt-4 rounded-2xl bg-white/70 px-4 py-3 shadow-lg ring-1 ring-blue-100/60 backdrop-blur-xl">
+          <div className="mt-4 rounded-2xl bg-white/80 px-5 py-4 shadow-xl ring-1 ring-white/20 backdrop-blur-2xl border border-white/30">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <button aria-label="Open menu" onClick={() => setDrawer(true)} className="rounded-xl border border-blue-200/60 bg-white/70 p-2 text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-white">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+              <div className="flex items-center gap-4">
+                <button 
+                  aria-label="Open menu" 
+                  onClick={() => setDrawer(true)} 
+                  className="group rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 sm:hidden"
+                >
+                  <svg className="h-5 w-5 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 6h18M3 12h18M3 18h18" />
+                  </svg>
                 </button>
-                <div className="flex items-center gap-2">
-                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 text-white">P</span>
-                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Producti</span>
+                <button 
+                  aria-label="Open menu" 
+                  onClick={() => setDrawer(true)} 
+                  className="hidden sm:flex items-center gap-2 rounded-xl border border-blue-200/60 bg-white/70 px-3 py-2 text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-white hover:shadow-md"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 6h18M3 12h18M3 18h18" />
+                  </svg>
+                  <span className="text-sm font-medium">Menu</span>
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
+                    <span className="text-sm font-bold">P</span>
+                  </div>
+                  <div>
+                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">Producti</span>
+                    <div className="text-xs text-gray-500 -mt-0.5">Analytics Platform</div>
+                  </div>
                 </div>
               </div>
-              <nav className="hidden items-center gap-1 sm:flex">
-                <a href="#features" className="rounded-full px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">Features</a>
-                <a href="#pricing" className="rounded-full px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">Pricing</a>
-                <a href="/dashboard" className="rounded-full px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">Dashboard</a>
+              
+              <nav className="hidden items-center gap-2 lg:flex">
+                <a href="#features" className="group rounded-xl px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-blue-600 hover:shadow-md">
+                  <span className="flex items-center gap-2">
+                    <svg className="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Features
+                  </span>
+                </a>
+                <a href="#pricing" className="group rounded-xl px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-blue-600 hover:shadow-md">
+                  <span className="flex items-center gap-2">
+                    <svg className="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                    </svg>
+                    Pricing
+                  </span>
+                </a>
+                <a href="/dashboard" className="group rounded-xl px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-blue-600 hover:shadow-md">
+                  <span className="flex items-center gap-2">
+                    <svg className="h-4 w-4 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    Dashboard
+                  </span>
+                </a>
               </nav>
-              <div className="hidden items-center gap-2 sm:flex">
-                <a href="/login" className="rounded-full px-3 py-1.5 text-sm font-semibold text-blue-700 hover:bg-blue-50">Login</a>
-                <a href="/signup" className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md">Get started</a>
+              
+              <div className="flex items-center gap-3">
+                <a href="/login" className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-blue-700 transition-all hover:bg-blue-50 hover:shadow-md">
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  Login
+                </a>
+                <a href="/signup" className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 transition-opacity group-hover:opacity-100"></div>
+                  <span className="relative flex items-center gap-2">
+                    Get Started
+                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                </a>
               </div>
             </div>
-            <div className="mt-2 h-px w-full bg-gradient-to-r from-transparent via-blue-200/60 to-transparent" />
           </div>
         </div>
       </div>
       <div className={`fixed inset-0 z-50 ${drawer ? "" : "pointer-events-none"}`}>
-        <div className={`absolute inset-0 bg-black/30 backdrop-blur-[2px] transition-opacity ${drawer ? "opacity-100" : "opacity-0"}`} onClick={() => setDrawer(false)} />
-        <div className={`absolute left-0 top-0 h-full w-72 transform bg-white shadow-2xl transition-transform duration-300 ${drawer ? "translate-x-0" : "-translate-x-full"}`}>
-          <div className="flex items-center justify-between border-b px-4 py-4">
-            <span className="text-sm font-semibold">Menu</span>
-            <button onClick={() => setDrawer(false)} aria-label="Close" className="rounded-md p-1 hover:bg-neutral-100">
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 18L18 6M6 6l12 12" /></svg>
+        <div className={`absolute inset-0 bg-black/40 backdrop-blur-[4px] transition-all duration-300 ${drawer ? "opacity-100" : "opacity-0"}`} onClick={() => setDrawer(false)} />
+        <div className={`absolute left-0 top-0 h-full w-80 transform bg-gradient-to-br from-white via-gray-50 to-blue-50 shadow-2xl transition-transform duration-300 ease-out ${drawer ? "translate-x-0" : "-translate-x-full"}`}>
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/90 backdrop-blur-xl px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
+                <span className="text-lg font-bold">P</span>
+              </div>
+              <div>
+                <h2 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Producti</h2>
+                <p className="text-xs text-gray-500">Analytics Dashboard</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setDrawer(false)} 
+              aria-label="Close" 
+              className="rounded-xl bg-gray-100 p-2.5 text-gray-500 transition-all hover:bg-gray-200 hover:text-gray-700 hover:scale-105"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-          <nav className="p-4">
-            <a href="#features" className="block rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">Features</a>
-            <a href="#pricing" className="mt-1 block rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">Pricing</a>
-            <a href="/login" className="mt-1 block rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">Login</a>
+
+          {/* Navigation */}
+          <nav className="flex h-full flex-col overflow-y-auto px-6 py-6">
+            <div className="space-y-2">
+              <div className="mb-4">
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Navigation</p>
+              </div>
+              
+              {/* Dashboard Link */}
+              <a 
+                href="/dashboard" 
+                className="group flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
+              >
+                <div className="rounded-lg bg-white/20 p-2">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <span className="font-semibold">Dashboard</span>
+                  <p className="text-xs text-blue-100">Analytics & Insights</p>
+                </div>
+                <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+
+              {/* Features */}
+              <a 
+                href="#features" 
+                className="group flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 transition-all hover:bg-white/80 hover:shadow-md"
+              >
+                <div className="rounded-lg bg-emerald-100 p-2 text-emerald-600">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium">Features</span>
+                  <p className="text-xs text-gray-500">What we offer</p>
+                </div>
+              </a>
+
+              {/* Pricing */}
+              <a 
+                href="#pricing" 
+                className="group flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 transition-all hover:bg-white/80 hover:shadow-md"
+              >
+                <div className="rounded-lg bg-amber-100 p-2 text-amber-600">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium">Pricing</span>
+                  <p className="text-xs text-gray-500">Plans & Options</p>
+                </div>
+              </a>
+
+              {/* Divider */}
+              <div className="my-6 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+              <div className="mb-4">
+                <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Account</p>
+              </div>
+
+              {/* Login */}
+              <a 
+                href="/login" 
+                className="group flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 transition-all hover:bg-white/80 hover:shadow-md"
+              >
+                <div className="rounded-lg bg-purple-100 p-2 text-purple-600">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium">Sign In</span>
+                  <p className="text-xs text-gray-500">Access your account</p>
+                </div>
+              </a>
+
+              {/* Sign Up */}
+              <a 
+                href="/signup" 
+                className="group flex items-center gap-3 rounded-xl border-2 border-dashed border-gray-300 px-4 py-3 text-gray-700 transition-all hover:border-blue-400 hover:bg-blue-50"
+              >
+                <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium">Get Started</span>
+                  <p className="text-xs text-gray-500">Create new account</p>
+                </div>
+                <div className="rounded-full bg-green-500 px-2 py-0.5 text-xs font-medium text-white">Free</div>
+              </a>
+            </div>
+
+            {/* Bottom Section */}
+            <div className="mt-auto space-y-4">
+              {/* Stats Card */}
+              <div className="rounded-xl bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm border border-gray-200/60">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+                  <span className="text-sm font-medium text-gray-700">Live Stats</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-center">
+                  <div>
+                    <p className="text-xs text-gray-500">Active Users</p>
+                    <p className="text-lg font-bold text-gray-900">1.2k+</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Stores</p>
+                    <p className="text-lg font-bold text-gray-900">450+</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Help Section */}
+              <div className="rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 p-4 border border-blue-200/40">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-sm font-medium text-blue-900">Need Help?</span>
+                </div>
+                <p className="text-xs text-blue-700 mb-3">Get started with our comprehensive guides and documentation.</p>
+                <button className="w-full rounded-lg bg-blue-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-blue-700">
+                  View Docs
+                </button>
+              </div>
+            </div>
           </nav>
         </div>
       </div>

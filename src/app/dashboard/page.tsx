@@ -1,9 +1,22 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-// import Link from "next/link";
-import { CheckCircle2, Loader2, Package, Search, ChevronDown } from "lucide-react";
-import { Bar, Pie, Line, Doughnut } from "react-chartjs-2";
+import {
+    CheckCircle2,
+    Loader2,
+    Package,
+    Search,
+    TrendingUp,
+    TrendingDown,
+    Users,
+    Star,
+    BarChart3,
+    PieChart,
+    Activity,
+    Filter,
+    Zap
+} from "lucide-react";
+import { Bar, Line, Doughnut } from "react-chartjs-2";
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -14,10 +27,19 @@ import {
     LineElement,
     Tooltip,
     Legend,
-    Title
+    Title,
+    Filler
 } from "chart.js";
+import CountUp from "react-countup";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Tooltip, Legend, Title);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Tooltip, Legend, Title, Filler);
 
 type ShopifyVariant = {
     id: number | string;
@@ -194,51 +216,7 @@ export default function ShopifyDashboard() {
         ],
     };
 
-    const colorPie = {
-        labels: colorLabels,
-        datasets: [
-            {
-                data: colorValues,
-                backgroundColor: colorLabels.map((_, i) => [chartColors.blue, chartColors.violet, chartColors.emerald, chartColors.amber, chartColors.rose, chartColors.blueLight][i % 6]),
-            },
-        ],
-    };
 
-    const createdLine = {
-        labels: dayLabels,
-        datasets: [
-            {
-                label: "Products Created",
-                data: dayValues,
-                borderColor: chartColors.violet,
-                backgroundColor: chartColors.violet,
-                tension: 0.3,
-                fill: false,
-            },
-        ],
-    };
-
-    const vendorDoughnut = {
-        labels: vendorLabels,
-        datasets: [
-            {
-                data: vendorValues,
-                backgroundColor: vendorLabels.map((_, i) => [chartColors.emerald, chartColors.blue, chartColors.violet, chartColors.amber, chartColors.rose, chartColors.blueLight][i % 6]),
-            },
-        ],
-    };
-
-    const topVariantsBar = {
-        labels: topVariantLabels,
-        datasets: [
-            {
-                label: 'Variants',
-                data: topVariantValues,
-                backgroundColor: chartColors.emerald,
-                borderRadius: 8,
-            }
-        ]
-    };
 
     const filtered = products
         .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
@@ -250,94 +228,177 @@ export default function ShopifyDashboard() {
         });
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 p-6 sm:p-8">
-            {/* Navbar removed for dashboard */}
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+            {/* Toast Notification */}
             {fallbackToast && (
-                <div className="fixed left-1/2 top-10 z-50 w-[600px] max-w-[95vw] -translate-x-1/2 animate-[fadeIn_.2s_ease-out]">
-                    <div className="flex items-start gap-4 rounded-2xl border border-emerald-300 bg-emerald-50/95 p-5 text-emerald-900 shadow-2xl backdrop-blur-sm">
-                        <CheckCircle2 className="mt-0.5 h-6 w-6 text-emerald-600" />
-                        <div className="text-base leading-6 font-medium">{fallbackToast}</div>
-                    </div>
-                    <style jsx>{`
-                        @keyframes fadeIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
-                    `}</style>
-                </div>
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="fixed left-1/2 top-4 z-50 w-[600px] max-w-[95vw] -translate-x-1/2"
+                >
+                    <Card className="border-emerald-200 bg-emerald-50/95 backdrop-blur-sm">
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                            <span className="text-sm font-medium text-emerald-800">{fallbackToast}</span>
+                        </CardContent>
+                    </Card>
+                </motion.div>
             )}
-            <div className="pointer-events-none absolute inset-0 -z-10">
-                <div className="absolute right-1/3 top-10 h-72 w-72 rounded-full bg-blue-500/10 blur-[100px]" />
-                <div className="absolute left-1/4 bottom-10 h-72 w-72 rounded-full bg-blue-400/10 blur-[100px]" />
-                <div className="absolute right-1/4 bottom-1/3 h-60 w-60 rounded-full bg-indigo-500/10 blur-[80px]" />
-            </div>
-            <div className="mx-auto max-w-7xl">
-                <header className="mb-6">
-                    <div className="rounded-2xl border border-blue-100/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
-                        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-                            <div>
-                                <h1 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
-                                    Shopify Store Dashboard
-                                </h1>
-                                <div className="mt-3 flex flex-wrap gap-3">
-                                    <div className="rounded-lg bg-blue-50 px-3 py-1">
-                                        <span className="text-xs font-medium text-blue-600">Total Products</span>
-                                        <p className="text-lg font-semibold text-blue-700">{totalProducts}</p>
-                                    </div>
-                                    <div className="rounded-lg bg-green-50 px-3 py-1">
-                                        <span className="text-xs font-medium text-green-600">Active Products</span>
-                                        <p className="text-lg font-semibold text-green-700">{activeProducts}</p>
-                                    </div>
-                                    <div className="rounded-lg bg-purple-50 px-3 py-1">
-                                        <span className="text-xs font-medium text-purple-600">Vendors</span>
-                                        <p className="text-lg font-semibold text-purple-700">{uniqueVendors}</p>
-                                    </div>
-                                    <div className="rounded-lg bg-indigo-50 px-3 py-1">
-                                        <span className="text-xs font-medium text-indigo-600">Average Price</span>
-                                        <p className="text-lg font-semibold text-indigo-700">₹{Math.round(avgPrice).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                                {/* Search */}
-                                <div className="relative sm:w-64">
-                                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                                    <input
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        placeholder="Search products..."
-                                        className="w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-4 py-2.5 text-sm text-neutral-900 shadow-sm transition placeholder:text-neutral-500 hover:border-neutral-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    />
-                                </div>
-                                {/* Category */}
-                                <div className="relative">
-                                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                                    <select
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="appearance-none rounded-xl border border-neutral-200 bg-white px-4 pr-9 py-2.5 text-sm text-neutral-900 shadow-sm transition hover:border-neutral-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    >
-                                        <option value="all">All categories</option>
-                                        {categories.map((c) => (
-                                            <option key={c} value={c}>{c}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                {/* Sort */}
-                                <div className="relative">
-                                    <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                                    <select
-                                        value={sort}
-                                        onChange={(e) => setSort(e.target.value)}
-                                        className="appearance-none rounded-xl border border-neutral-200 bg-white px-4 pr-9 py-2.5 text-sm text-neutral-900 shadow-sm transition hover:border-neutral-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    >
-                                        <option value="recent">Sort: Recent</option>
-                                        <option value="price-asc">Price: Low → High</option>
-                                        <option value="price-desc">Price: High → Low</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </header>
 
+            <div className="container mx-auto p-6 space-y-8">
+                {/* Header Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-6"
+                >
+                    <Card className="border-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                        <CardHeader className="pb-4">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-2">
+                                    <CardTitle className="text-3xl font-bold text-white">
+                                        Shopify Analytics Dashboard
+                                    </CardTitle>
+                                    <CardDescription className="text-blue-100">
+                                        Real-time insights and performance metrics
+                                    </CardDescription>
+                                </div>
+                                <div className="flex flex-col lg:flex-row items-end gap-4">
+
+
+                                    {/* Search and Filters in Header */}
+                                    <div className="flex flex-col lg:flex-row gap-3 items-end">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/70" />
+                                            <input
+                                                value={search}
+                                                onChange={(e) => setSearch(e.target.value)}
+                                                placeholder="Search products..."
+                                                className="w-64 rounded-lg bg-white/20 border border-white/30 px-10 py-2 text-sm text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/30 focus:bg-white/30"
+                                            />
+                                        </div>
+                                        <select
+                                            value={category}
+                                            onChange={(e) => setCategory(e.target.value)}
+                                            className="rounded-lg bg-white/20 border border-white/30 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+                                        >
+                                            <option value="all" className="text-gray-900">All Categories</option>
+                                            {categories.map((c) => (
+                                                <option key={c} value={c} className="text-gray-900">{c}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            value={sort}
+                                            onChange={(e) => setSort(e.target.value)}
+                                            className="rounded-lg bg-white/20 border border-white/30 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30"
+                                        >
+                                            <option value="recent" className="text-gray-900">Sort by Recent</option>
+                                            <option value="price-asc" className="text-gray-900">Price: Low to High</option>
+                                            <option value="price-desc" className="text-gray-900">Price: High to Low</option>
+                                        </select>
+                                        <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
+                                            <Filter className="h-4 w-4 mr-2" />
+                                            Filters
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {/* KPI Cards Row */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.1 }}
+                                    className="bg-white/20 backdrop-blur-sm rounded-lg p-4 border border-white/30"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-blue-100 text-sm font-medium">Total Products</p>
+                                            <p className="text-2xl font-bold text-white">
+                                                <CountUp end={totalProducts} duration={2} />
+                                            </p>
+                                        </div>
+                                        <Package className="h-8 w-8 text-blue-200" />
+                                    </div>
+                                    <div className="flex items-center mt-2 text-xs">
+                                        <TrendingUp className="h-3 w-3 mr-1" />
+                                        <span className="text-blue-100">+12% from last month</span>
+                                    </div>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="bg-white/20 backdrop-blur-sm rounded-lg p-4 border border-white/30"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-blue-100 text-sm font-medium">Active Products</p>
+                                            <p className="text-2xl font-bold text-white">
+                                                <CountUp end={activeProducts} duration={2} />
+                                            </p>
+                                        </div>
+                                        <Activity className="h-8 w-8 text-green-300" />
+                                    </div>
+                                    <div className="flex items-center mt-2 text-xs">
+                                        <TrendingUp className="h-3 w-3 mr-1" />
+                                        <span className="text-blue-100">+8% from last month</span>
+                                    </div>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="bg-white/20 backdrop-blur-sm rounded-lg p-4 border border-white/30"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-blue-100 text-sm font-medium">Vendors</p>
+                                            <p className="text-2xl font-bold text-white">
+                                                <CountUp end={uniqueVendors} duration={2} />
+                                            </p>
+                                        </div>
+                                        <Users className="h-8 w-8 text-purple-300" />
+                                    </div>
+                                    <div className="flex items-center mt-2 text-xs">
+                                        <TrendingUp className="h-3 w-3 mr-1" />
+                                        <span className="text-blue-100">+3 new vendors</span>
+                                    </div>
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="bg-white/20 backdrop-blur-sm rounded-lg p-4 border border-white/30"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-blue-100 text-sm font-medium">Avg. Price</p>
+                                            <p className="text-2xl font-bold text-white">
+                                                ₹<CountUp end={Math.round(avgPrice)} duration={2} separator="," />
+                                            </p>
+                                        </div>
+                                        <Star className="h-8 w-8 text-yellow-300" />
+                                    </div>
+                                    <div className="flex items-center mt-2 text-xs">
+                                        <TrendingDown className="h-3 w-3 mr-1" />
+                                        <span className="text-blue-100">-2% from last month</span>
+                                    </div>
+                                </motion.div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                </motion.div>
+
+
+
+                {/* Products Grid - Original Style */}
                 <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {filtered.map((product) => (
                         <article key={product.id} className="group overflow-hidden rounded-2xl border border-blue-100/50 bg-white/80 shadow-lg transition duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-white/90">
@@ -458,76 +519,627 @@ export default function ShopifyDashboard() {
                     ))}
                 </section>
                 {filtered.length === 0 && (
-                    <div className="mt-8 flex flex-col items-center justify-center rounded-2xl border border-blue-100/50 bg-white/80 p-8 text-center backdrop-blur-xl">
-                        <Package className="h-12 w-12 text-blue-200" />
-                        <h3 className="mt-4 text-lg font-semibold text-neutral-900">No products found</h3>
-                        <p className="mt-1 text-sm text-neutral-600">Try adjusting your search or filters</p>
-                    </div>
+                    <Card className="text-center py-12">
+                        <CardContent className="space-y-4">
+                            <Package className="h-16 w-16 text-muted-foreground mx-auto" />
+                            <div className="space-y-2">
+                                <CardTitle className="text-xl">No products found</CardTitle>
+                                <CardDescription>
+                                    Try adjusting your search criteria or filters to find products
+                                </CardDescription>
+                            </div>
+                            <Button variant="outline" onClick={() => { setSearch(''); setCategory('all'); }}>
+                                Clear Filters
+                            </Button>
+                        </CardContent>
+                    </Card>
                 )}
 
-                {/* Analytics Section */}
-                <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    <div className="rounded-2xl border border-blue-100/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
-                        <h3 className="mb-4 text-base font-semibold text-neutral-900">Price distribution</h3>
-                        <Bar data={priceBar} options={{ responsive: true, scales: { y: { ticks: { precision: 0 } } }, plugins: { legend: { display: false } }, ...baseAnim }} />
-                    </div>
-                    <div className="rounded-2xl border border-blue-100/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
-                        <h3 className="mb-4 text-base font-semibold text-neutral-900">Variant colors (top 12)</h3>
-                        <Pie data={colorPie} options={{ responsive: true, plugins: { legend: { position: 'bottom' } }, ...baseAnim }} />
-                    </div>
-                    <div className="rounded-2xl border border-blue-100/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
-                        <h3 className="mb-4 text-base font-semibold text-neutral-900">Products created by day</h3>
-                        <Line data={createdLine} options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { precision: 0 } } }, ...baseAnim }} />
-                    </div>
-                </div>
+                {/* Analytics Tabs Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                >
+                    <Tabs defaultValue="overview" className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <TabsList className="grid w-full max-w-md grid-cols-4">
+                                <TabsTrigger value="overview" className="flex items-center gap-2">
+                                    <BarChart3 className="h-4 w-4" />
+                                    Overview
+                                </TabsTrigger>
+                                <TabsTrigger value="products" className="flex items-center gap-2">
+                                    <Package className="h-4 w-4" />
+                                    Products
+                                </TabsTrigger>
+                                <TabsTrigger value="performance" className="flex items-center gap-2">
+                                    <Activity className="h-4 w-4" />
+                                    Performance
+                                </TabsTrigger>
+                                <TabsTrigger value="vendors" className="flex items-center gap-2">
+                                    <Users className="h-4 w-4" />
+                                    Vendors
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
 
-                {/* KPIs */}
-                <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
-                    <div className="rounded-xl border border-blue-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Products</div>
-                        <div className="text-2xl font-bold text-blue-600">{totalProducts}</div>
-                    </div>
-                    <div className="rounded-xl border border-green-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Active</div>
-                        <div className="text-2xl font-bold text-green-600">{activeProducts}</div>
-                    </div>
-                    <div className="rounded-xl border border-purple-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Vendors</div>
-                        <div className="text-2xl font-bold text-purple-600">{uniqueVendors}</div>
-                    </div>
-                    <div className="rounded-xl border border-indigo-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Avg price</div>
-                        <div className="text-2xl font-bold text-indigo-600">₹{Math.round(avgPrice).toLocaleString()}</div>
-                    </div>
-                    <div className="rounded-xl border border-amber-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Total variants</div>
-                        <div className="text-2xl font-bold text-amber-600">{totalVariants}</div>
-                    </div>
-                    <div className="rounded-xl border border-rose-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Out of stock</div>
-                        <div className="text-2xl font-bold text-rose-600">{outOfStock}</div>
-                    </div>
-                    <div className="rounded-xl border border-neutral-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Min price</div>
-                        <div className="text-2xl font-bold text-neutral-700">₹{Math.round(minPrice).toLocaleString()}</div>
-                    </div>
-                    <div className="rounded-xl border border-neutral-100/50 bg-white/80 p-4 text-center">
-                        <div className="text-xs font-medium text-neutral-500">Max price</div>
-                        <div className="text-2xl font-bold text-neutral-700">₹{Math.round(maxPrice).toLocaleString()}</div>
-                    </div>
-                </div>
+                        <TabsContent value="overview" className="space-y-8">
+                            {/* Products Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-blue-500 p-2 rounded-lg">
+                                        <Package className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-foreground">Products Analytics</h2>
+                                        <p className="text-muted-foreground">Comprehensive view of your product portfolio</p>
+                                    </div>
+                                </div>
 
-                {/* Vendor share and Top products */}
-                <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <div className="rounded-2xl border border-blue-100/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
-                        <h3 className="mb-4 text-base font-semibold text-neutral-900">Vendor share</h3>
-                        <Doughnut data={vendorDoughnut} options={{ responsive: true, plugins: { legend: { position: 'bottom' } }, cutout: '60%', ...baseAnim }} />
-                    </div>
-                    <div className="rounded-2xl border border-blue-100/50 bg-white/80 p-6 shadow-lg backdrop-blur-xl">
-                        <h3 className="mb-4 text-base font-semibold text-neutral-900">Top products by variants</h3>
-                        <Bar data={topVariantsBar} options={{ responsive: true, indexAxis: 'y' as const, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } }, ...baseAnim }} />
-                    </div>
-                </div>
+                                {/* Product Charts Row 1 */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                    <Card className="hover:shadow-lg transition-shadow">
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-base font-semibold">Price Distribution</CardTitle>
+                                            <div className="bg-blue-100 p-2 rounded-lg">
+                                                <BarChart3 className="h-4 w-4 text-blue-600" />
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Bar data={priceBar} options={{
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                scales: {
+                                                    y: {
+                                                        ticks: { precision: 0 },
+                                                        grid: { color: '#f1f5f9' }
+                                                    },
+                                                    x: { grid: { display: false } }
+                                                },
+                                                plugins: { legend: { display: false } },
+                                                backgroundColor: '#3b82f6',
+                                                ...baseAnim
+                                            }} height={280} />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="hover:shadow-lg transition-shadow overflow-hidden">
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-base font-semibold">Product Categories</CardTitle>
+                                            <div className="bg-gradient-to-r from-emerald-400 to-cyan-400 p-2 rounded-lg">
+                                                <BarChart3 className="h-4 w-4 text-white" />
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="relative">
+                                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-cyan-50/50 pointer-events-none"></div>
+                                            <div className="relative">
+                                                <Line data={{
+                                                    labels: categories.map(cat => cat.length > 10 ? cat.slice(0, 10) + "..." : cat),
+                                                    datasets: [{
+                                                        label: "Products",
+                                                        data: categories.map(cat => products.filter(p => (p.product_type || "Uncategorized") === cat).length),
+                                                        fill: true,
+                                                        backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D } }) => {
+                                                            const ctx = context.chart.ctx;
+                                                            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                                                            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.3)');
+                                                            gradient.addColorStop(0.5, 'rgba(6, 182, 212, 0.2)');
+                                                            gradient.addColorStop(1, 'rgba(6, 182, 212, 0.05)');
+                                                            return gradient;
+                                                        },
+                                                        borderColor: '#10b981',
+                                                        borderWidth: 3,
+                                                        tension: 0.4,
+                                                        pointBackgroundColor: '#ffffff',
+                                                        pointBorderColor: '#10b981',
+                                                        pointBorderWidth: 3,
+                                                        pointRadius: 6,
+                                                        pointHoverRadius: 8,
+                                                        pointHoverBackgroundColor: '#10b981',
+                                                        pointHoverBorderColor: '#ffffff',
+                                                        pointHoverBorderWidth: 3,
+                                                        pointShadowColor: 'rgba(16, 185, 129, 0.3)',
+                                                        pointShadowBlur: 10
+                                                    }]
+                                                }} options={{
+                                                    responsive: true,
+                                                    maintainAspectRatio: false,
+                                                    interaction: {
+                                                        intersect: false,
+                                                        mode: 'index'
+                                                    },
+                                                    plugins: {
+                                                        legend: { display: false },
+                                                        tooltip: {
+                                                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                                            titleColor: '#ffffff',
+                                                            bodyColor: '#ffffff',
+                                                            borderColor: '#10b981',
+                                                            borderWidth: 2,
+                                                            cornerRadius: 12,
+                                                            displayColors: false,
+                                                            padding: 12,
+                                                            titleFont: { size: 14, weight: 'bold' },
+                                                            bodyFont: { size: 13 },
+                                                            callbacks: {
+                                                                title: function (context: Array<{ dataIndex: number }>) {
+                                                                    return categories[context[0].dataIndex];
+                                                                },
+                                                                label: function (context: { parsed: { y: number } }) {
+                                                                    return `${context.parsed.y} products`;
+                                                                },
+                                                                afterLabel: function (context: { parsed: { y: number } }) {
+                                                                    const total = categories.reduce((sum, cat) =>
+                                                                        sum + products.filter(p => (p.product_type || "Uncategorized") === cat).length, 0);
+                                                                    const percentage = ((context.parsed.y / total) * 100).toFixed(1);
+                                                                    return `${percentage}% of total`;
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    scales: {
+                                                        y: {
+                                                            beginAtZero: true,
+                                                            ticks: {
+                                                                precision: 0,
+                                                                color: '#64748b',
+                                                                font: { size: 12 },
+                                                                padding: 8
+                                                            },
+                                                            grid: {
+                                                                color: 'rgba(148, 163, 184, 0.1)',
+                                                                drawBorder: false,
+                                                                lineWidth: 1
+                                                            },
+                                                            border: { display: false }
+                                                        },
+                                                        x: {
+                                                            ticks: {
+                                                                color: '#64748b',
+                                                                font: { size: 11 },
+                                                                maxRotation: 0,
+                                                                padding: 8
+                                                            },
+                                                            grid: { display: false },
+                                                            border: { display: false }
+                                                        }
+                                                    },
+                                                    elements: {
+                                                        line: {
+                                                            borderJoinStyle: 'round',
+                                                            borderCapStyle: 'round'
+                                                        }
+                                                    },
+                                                    ...baseAnim
+                                                }} height={280} />
+                                            </div>
+                                        </CardContent>
+                                        <div className="px-6 pb-6">
+                                            <div className="flex items-center gap-2 text-sm font-medium text-emerald-600 mb-1">
+                                                <TrendingUp className="h-4 w-4" />
+                                                Category Performance Trend
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                Visual distribution across product categories with gradient fill
+                                            </p>
+                                        </div>
+                                    </Card>
+
+                                    <Card className="hover:shadow-lg transition-shadow">
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                            <CardTitle className="text-base font-semibold">Creation Trend</CardTitle>
+                                            <div className="bg-purple-100 p-2 rounded-lg">
+                                                <Activity className="h-4 w-4 text-purple-600" />
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Line data={{
+                                                labels: dayLabels,
+                                                datasets: [{
+                                                    label: "Products Created",
+                                                    data: dayValues,
+                                                    borderColor: '#8b5cf6',
+                                                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                                    tension: 0.4,
+                                                    fill: true,
+                                                    pointBackgroundColor: '#8b5cf6',
+                                                    pointBorderColor: '#ffffff',
+                                                    pointBorderWidth: 2
+                                                }]
+                                            }} options={{
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: { legend: { display: false } },
+                                                scales: {
+                                                    y: {
+                                                        ticks: { precision: 0 },
+                                                        grid: { color: '#f1f5f9' }
+                                                    },
+                                                    x: { grid: { display: false } }
+                                                },
+                                                ...baseAnim
+                                            }} height={280} />
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Product Charts Row 2 */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <Card className="hover:shadow-lg transition-shadow">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <div className="bg-orange-100 p-2 rounded-lg">
+                                                    <Users className="h-5 w-5 text-orange-600" />
+                                                </div>
+                                                Vendor Market Share
+                                            </CardTitle>
+                                            <CardDescription>Distribution of products across different vendors</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Doughnut data={{
+                                                labels: vendorLabels,
+                                                datasets: [{
+                                                    data: vendorValues,
+                                                    backgroundColor: [
+                                                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+                                                    ],
+                                                    borderWidth: 0,
+                                                    spacing: 2
+                                                }]
+                                            }} options={{
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: {
+                                                    legend: {
+                                                        position: 'bottom',
+                                                        labels: { usePointStyle: true, padding: 15 }
+                                                    }
+                                                },
+                                                cutout: '65%',
+                                                ...baseAnim
+                                            }} height={320} />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="hover:shadow-lg transition-shadow">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <div className="bg-cyan-100 p-2 rounded-lg">
+                                                    <BarChart3 className="h-5 w-5 text-cyan-600" />
+                                                </div>
+                                                Top Products by Variants
+                                            </CardTitle>
+                                            <CardDescription>Products with the most variant options available</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Bar data={{
+                                                labels: topVariantLabels,
+                                                datasets: [{
+                                                    label: 'Variants',
+                                                    data: topVariantValues,
+                                                    backgroundColor: 'rgba(6, 182, 212, 0.8)',
+                                                    borderColor: '#06b6d4',
+                                                    borderWidth: 1,
+                                                    borderRadius: 4
+                                                }]
+                                            }} options={{
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                indexAxis: 'y' as const,
+                                                plugins: { legend: { display: false } },
+                                                scales: {
+                                                    x: {
+                                                        ticks: { precision: 0 },
+                                                        grid: { color: '#f1f5f9' }
+                                                    },
+                                                    y: { grid: { display: false } }
+                                                },
+                                                ...baseAnim
+                                            }} height={320} />
+                                        </CardContent>
+                                    </Card>
+                                </div>
+
+                                {/* Variant Analysis Row */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <Card className="hover:shadow-lg transition-shadow">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <div className="bg-rose-100 p-2 rounded-lg">
+                                                    <PieChart className="h-5 w-5 text-rose-600" />
+                                                </div>
+                                                Variant Colors Distribution
+                                            </CardTitle>
+                                            <CardDescription>Most popular color options across all variants</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Doughnut data={{
+                                                labels: colorLabels,
+                                                datasets: [{
+                                                    data: colorValues,
+                                                    backgroundColor: [
+                                                        '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#06b6d4',
+                                                        '#f97316', '#84cc16', '#06b6d4', '#8b5cf6', '#ec4899', '#14b8a6'
+                                                    ],
+                                                    borderWidth: 0,
+                                                    spacing: 1
+                                                }]
+                                            }} options={{
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: {
+                                                    legend: {
+                                                        position: 'right',
+                                                        labels: { usePointStyle: true, padding: 10 }
+                                                    }
+                                                },
+                                                cutout: '45%',
+                                                ...baseAnim
+                                            }} height={300} />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card className="hover:shadow-lg transition-shadow">
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <div className="bg-emerald-100 p-2 rounded-lg">
+                                                    <BarChart3 className="h-5 w-5 text-emerald-600" />
+                                                </div>
+                                                Price Range Analysis
+                                            </CardTitle>
+                                            <CardDescription>Product count distribution across price ranges</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <Bar data={{
+                                                labels: bucketLabels,
+                                                datasets: [{
+                                                    label: 'Products',
+                                                    data: bucketCounts,
+                                                    backgroundColor: [
+                                                        'rgba(16, 185, 129, 0.8)',
+                                                        'rgba(59, 130, 246, 0.8)',
+                                                        'rgba(245, 158, 11, 0.8)',
+                                                        'rgba(239, 68, 68, 0.8)',
+                                                        'rgba(139, 92, 246, 0.8)'
+                                                    ],
+                                                    borderColor: [
+                                                        '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'
+                                                    ],
+                                                    borderWidth: 1,
+                                                    borderRadius: 6
+                                                }]
+                                            }} options={{
+                                                responsive: true,
+                                                maintainAspectRatio: false,
+                                                plugins: { legend: { display: false } },
+                                                scales: {
+                                                    y: {
+                                                        ticks: { precision: 0 },
+                                                        grid: { color: '#f1f5f9' }
+                                                    },
+                                                    x: { grid: { display: false } }
+                                                },
+                                                ...baseAnim
+                                            }} height={300} />
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
+
+                            {/* Metrics & Stats Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-emerald-500 p-2 rounded-lg">
+                                        <BarChart3 className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-foreground">Metrics & Stats</h2>
+                                        <p className="text-muted-foreground">Key performance indicators and detailed analytics</p>
+                                    </div>
+                                </div>
+
+                                {/* Enhanced Metrics Cards */}
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                    <Card className="p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-muted-foreground">Total Variants</span>
+                                                <Zap className="h-3 w-3 text-amber-500" />
+                                            </div>
+                                            <div className="text-xl font-bold">
+                                                <CountUp end={totalVariants} duration={2} />
+                                            </div>
+                                            <Progress value={75} className="h-1" />
+                                        </div>
+                                    </Card>
+
+                                    <Card className="p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-muted-foreground">Out of Stock</span>
+                                                <Package className="h-3 w-3 text-red-500" />
+                                            </div>
+                                            <div className="text-xl font-bold text-red-600">
+                                                <CountUp end={outOfStock} duration={2} />
+                                            </div>
+                                            <Progress value={outOfStock > 0 ? (outOfStock / totalVariants) * 100 : 0} className="h-1" />
+                                        </div>
+                                    </Card>
+
+                                    <Card className="p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-muted-foreground">Min Price</span>
+                                                <TrendingDown className="h-3 w-3 text-green-500" />
+                                            </div>
+                                            <div className="text-xl font-bold">
+                                                ₹<CountUp end={Math.round(minPrice)} duration={2} separator="," />
+                                            </div>
+                                        </div>
+                                    </Card>
+
+                                    <Card className="p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-muted-foreground">Max Price</span>
+                                                <TrendingUp className="h-3 w-3 text-blue-500" />
+                                            </div>
+                                            <div className="text-xl font-bold">
+                                                ₹<CountUp end={Math.round(maxPrice)} duration={2} separator="," />
+                                            </div>
+                                        </div>
+                                    </Card>
+
+                                    <Card className="p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-muted-foreground">Categories</span>
+                                                <Package className="h-3 w-3 text-purple-500" />
+                                            </div>
+                                            <div className="text-xl font-bold">
+                                                <CountUp end={categories.length} duration={2} />
+                                            </div>
+                                        </div>
+                                    </Card>
+
+                                    <Card className="p-4 hover:shadow-lg transition-shadow">
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-medium text-muted-foreground">Avg Variants</span>
+                                                <Activity className="h-3 w-3 text-indigo-500" />
+                                            </div>
+                                            <div className="text-xl font-bold">
+                                                <CountUp end={Math.round(totalVariants / Math.max(totalProducts, 1))} duration={2} />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </div>
+                            </div>
+
+                        </TabsContent>
+
+                        <TabsContent value="products" className="space-y-6">
+                            <div className="grid grid-cols-1 gap-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Package className="h-5 w-5" />
+                                            Product Categories
+                                        </CardTitle>
+                                        <CardDescription>Breakdown of products by category</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            {categories.map((category, index) => {
+                                                const categoryProducts = products.filter(p => (p.product_type || "Uncategorized") === category);
+                                                const percentage = Math.round((categoryProducts.length / totalProducts) * 100);
+                                                return (
+                                                    <div key={category} className="flex items-center justify-between p-4 border rounded-lg">
+                                                        <div className="flex items-center space-x-3">
+                                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: [chartColors.blue, chartColors.violet, chartColors.emerald, chartColors.amber, chartColors.rose][index % 5] }}></div>
+                                                            <div>
+                                                                <p className="font-medium">{category}</p>
+                                                                <p className="text-sm text-muted-foreground">{categoryProducts.length} products</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center space-x-2">
+                                                            <Progress
+                                                                value={percentage}
+                                                                className="w-20 h-2"
+                                                            />
+                                                            <Badge variant="outline">
+                                                                {percentage}%
+                                                            </Badge>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="performance" className="space-y-6">
+                            <div className="grid grid-cols-1 gap-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Activity className="h-5 w-5" />
+                                            Performance Metrics
+                                        </CardTitle>
+                                        <CardDescription>Key performance indicators for your store</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium">Active Products Rate</span>
+                                                    <Badge variant="secondary">{Math.round((activeProducts / Math.max(totalProducts, 1)) * 100)}%</Badge>
+                                                </div>
+                                                <Progress value={(activeProducts / Math.max(totalProducts, 1)) * 100} className="h-2" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium">Inventory Health</span>
+                                                    <Badge variant="secondary">{Math.round(((totalVariants - outOfStock) / Math.max(totalVariants, 1)) * 100)}%</Badge>
+                                                </div>
+                                                <Progress value={((totalVariants - outOfStock) / Math.max(totalVariants, 1)) * 100} className="h-2" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium">Vendor Diversity</span>
+                                                    <Badge variant="secondary">{Math.round((uniqueVendors / Math.max(totalProducts, 1)) * 100)}%</Badge>
+                                                </div>
+                                                <Progress value={(uniqueVendors / Math.max(totalProducts, 1)) * 100} className="h-2" />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="vendors" className="space-y-6">
+                            <div className="grid grid-cols-1 gap-6">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Users className="h-5 w-5" />
+                                            Vendor Analytics
+                                        </CardTitle>
+                                        <CardDescription>Detailed breakdown of vendor performance</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            {vendorLabels.slice(0, 5).map((vendor, index) => (
+                                                <div key={vendor} className="flex items-center justify-between p-4 border rounded-lg">
+                                                    <div className="flex items-center space-x-3">
+                                                        <Avatar>
+                                                            <AvatarFallback>{vendor.charAt(0)}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <p className="font-medium">{vendor}</p>
+                                                            <p className="text-sm text-muted-foreground">{vendorValues[index]} products</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Progress
+                                                            value={(vendorValues[index] / Math.max(...vendorValues)) * 100}
+                                                            className="w-20 h-2"
+                                                        />
+                                                        <Badge variant="outline">
+                                                            {Math.round((vendorValues[index] / totalProducts) * 100)}%
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
+                    </Tabs>
+                </motion.div>
             </div>
         </div>
     );

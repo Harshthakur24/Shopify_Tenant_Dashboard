@@ -57,11 +57,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // No env fallback: token must come from tenant configuration
-  if (!accessToken) {
-    return NextResponse.json({ error: "No Shopify access token configured for this tenant" }, { status: 400 });
-  }
-
   try {
     const cacheKey = `products:${shopDomain}`;
     const cached = await cacheGet<{ products: unknown[] }>(cacheKey);
@@ -79,10 +74,39 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Helper: build a minimal Shopify-like payload from DB to serve quickly on cache miss
+    async function buildDbPayload(tenant: string | undefined) {
+      if (!tenant) return { products: [] as Array<unknown> };
+      const db = await prisma.product.findMany({
+        where: { tenantId: tenant },
+        select: { shopId: true, title: true, price: true, createdAt: true, updatedAt: true },
+        take: 1000,
+      });
+
+      const products = db.map((p) => ({
+        id: p.shopId,
+        title: p.title,
+        // Minimal shape used by the dashboard
+        variants: [{ price: p.price.toString() }],
+        status: "active",
+        vendor: "Unknown",
+        product_type: "General",
+        handle: (p.title || "").toLowerCase().replace(/\s+/g, "-"),
+        body_html: "",
+        image: null,
+        images: [],
+        options: [],
+        created_at: p.createdAt.toISOString(),
+      }));
+
+      return { products };
+    }
+
     // If cached, return immediately and revalidate in background
     if (cached && !usingFallback) {
       (async () => {
         try {
+          if (!accessToken) return; // cannot revalidate without token
           const res = await fetch(`https://${shopDomain}/admin/api/2025-07/products.json`, {
             headers: { "X-Shopify-Access-Token": accessToken as string },
             cache: "no-store",
@@ -100,19 +124,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ ...cached, __cached: true, __stale: true, __fallback: false }, { status: 200 });
     }
 
-    // No cache → fetch now, then cache and upsert
-    const res = await fetch(`https://${shopDomain}/admin/api/2025-07/products.json`, {
-      headers: { "X-Shopify-Access-Token": accessToken as string },
-      cache: "no-store",
-    });
-    const json = await res.json();
-    if (res.ok && !usingFallback) {
-      await cacheSet(cacheKey, json, 300);
-      if (tenantId && Array.isArray(json?.products)) {
-        await upsertProducts(tenantId, json.products as Array<{ id: number | string; title?: string; variants?: Array<{ price?: string | number }> }>);
+    // No cache → return fast from DB if available, and refresh in background
+    const dbPayload = await buildDbPayload(tenantId);
+
+    // Kick off background refresh to Shopify if we have a token
+    (async () => {
+      try {
+        if (!accessToken) return;
+        const res = await fetch(`https://${shopDomain}/admin/api/2025-07/products.json`, {
+          headers: { "X-Shopify-Access-Token": accessToken as string },
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const fresh = await res.json();
+        await cacheSet(cacheKey, fresh, 300);
+        if (tenantId && Array.isArray(fresh?.products)) {
+          await upsertProducts(tenantId, fresh.products as Array<{ id: number | string; title?: string; variants?: Array<{ price?: string | number }> }>);
+        }
+      } catch {
+        // ignore background errors
       }
-    }
-    return NextResponse.json({ ...json, __fallback: usingFallback }, { status: res.status });
+    })();
+
+    const status = dbPayload.products.length ? 200 : 200;
+    return NextResponse.json({ ...dbPayload, __cached: false, __stale: true, __fallback: usingFallback, __source: "db" }, { status });
   } catch (e: unknown) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
