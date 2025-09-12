@@ -309,36 +309,35 @@ function AutoHideNavbar() {
           <div className="mt-4 rounded-2xl bg-white/80 px-5 py-4 shadow-xl ring-1 ring-white/20 backdrop-blur-2xl border border-white/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <button 
-                  aria-label="Open menu" 
-                  onClick={() => setDrawer(true)} 
+                <button
+                  aria-label="Open menu"
+                  onClick={() => setDrawer(true)}
                   className="group rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 p-2.5 text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 sm:hidden"
                 >
                   <svg className="h-5 w-5 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 6h18M3 12h18M3 18h18" />
                   </svg>
                 </button>
-                <button 
-                  aria-label="Open menu" 
-                  onClick={() => setDrawer(true)} 
+                <button
+                  aria-label="Open menu"
+                  onClick={() => setDrawer(true)}
                   className="hidden sm:flex items-center gap-2 rounded-xl border border-blue-200/60 bg-white/70 px-3 py-2 text-blue-700 shadow-sm transition-all hover:border-blue-300 hover:bg-white hover:shadow-md"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 6h18M3 12h18M3 18h18" />
                   </svg>
-                  <span className="text-sm font-medium">Menu</span>
                 </button>
                 <div className="flex items-center gap-3">
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
-                    <span className="text-sm font-bold">P</span>
+                    <span className="text-sm font-bold">S</span>
                   </div>
                   <div>
-                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">Producti</span>
+                    <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-xl font-bold tracking-tight text-transparent">Shopify Tenant Sore</span>
                     <div className="text-xs text-gray-500 -mt-0.5">Analytics Platform</div>
                   </div>
                 </div>
               </div>
-              
+
               <nav className="hidden items-center gap-2 lg:flex">
                 <a href="#features" className="group rounded-xl px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-blue-600 hover:shadow-md">
                   <span className="flex items-center gap-2">
@@ -365,7 +364,7 @@ function AutoHideNavbar() {
                   </span>
                 </a>
               </nav>
-              
+
               <div className="flex items-center gap-3">
                 <a href="/login" className="hidden sm:flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-blue-700 transition-all hover:bg-blue-50 hover:shadow-md">
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -401,9 +400,9 @@ function AutoHideNavbar() {
                 <p className="text-xs text-gray-500">Analytics Dashboard</p>
               </div>
             </div>
-            <button 
-              onClick={() => setDrawer(false)} 
-              aria-label="Close" 
+            <button
+              onClick={() => setDrawer(false)}
+              aria-label="Close"
               className="rounded-xl bg-gray-100 p-2.5 text-gray-500 transition-all hover:bg-gray-200 hover:text-gray-700 hover:scale-105"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -418,10 +417,10 @@ function AutoHideNavbar() {
               <div className="mb-4">
                 <p className="px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Navigation</p>
               </div>
-              
+
               {/* Dashboard Link */}
-              <a 
-                href="/dashboard" 
+              <a
+                href="/dashboard"
                 className="group flex items-center gap-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-white shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]"
               >
                 <div className="rounded-lg bg-white/20 p-2">
@@ -439,8 +438,8 @@ function AutoHideNavbar() {
               </a>
 
               {/* Features */}
-              <a 
-                href="#features" 
+              <a
+                href="#features"
                 className="group flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 transition-all hover:bg-white/80 hover:shadow-md"
               >
                 <div className="rounded-lg bg-emerald-100 p-2 text-emerald-600">
@@ -455,8 +454,8 @@ function AutoHideNavbar() {
               </a>
 
               {/* Pricing */}
-              <a 
-                href="#pricing" 
+              <a
+                href="#pricing"
                 className="group flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 transition-all hover:bg-white/80 hover:shadow-md"
               >
                 <div className="rounded-lg bg-amber-100 p-2 text-amber-600">
@@ -478,8 +477,8 @@ function AutoHideNavbar() {
               </div>
 
               {/* Login */}
-              <a 
-                href="/login" 
+              <a
+                href="/login"
                 className="group flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 transition-all hover:bg-white/80 hover:shadow-md"
               >
                 <div className="rounded-lg bg-purple-100 p-2 text-purple-600">
@@ -494,8 +493,8 @@ function AutoHideNavbar() {
               </a>
 
               {/* Sign Up */}
-              <a 
-                href="/signup" 
+              <a
+                href="/signup"
                 className="group flex items-center gap-3 rounded-xl border-2 border-dashed border-gray-300 px-4 py-3 text-gray-700 transition-all hover:border-blue-400 hover:bg-blue-50"
               >
                 <div className="rounded-lg bg-blue-100 p-2 text-blue-600">
@@ -582,7 +581,7 @@ function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2">
               <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 text-white">P</span>
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Producti</span>
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Shopify Tenant Store</span>
             </div>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-neutral-400">
               Ingest Shopify data and turn it into actionable insights with a modern, mobile‑first dashboard.
@@ -622,7 +621,7 @@ function Footer() {
             </div>
           </div>
           <div>
-            <h4 className="mb-3 text-sm font-semibold tracking-wide text-white">Product</h4>
+            <h4 className="mb-3 text-sm font-semibold tracking-wide text-white">Shopify Tenant Store</h4>
             <ul className="space-y-2 text-sm">
               <li><a href="#features" className="text-neutral-400 transition hover:text-white">Features</a></li>
               <li><a href="/dashboard" className="text-neutral-400 transition hover:text-white">Dashboard</a></li>
@@ -647,7 +646,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-neutral-800 pt-6 text-sm text-neutral-500 sm:flex-row">
-          <p>© {new Date().getFullYear()} Producti. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Shopify Tenant Store. All rights reserved. Made with ❤️ by <a href="https://github.com/Harshthakur24" target="_blank" rel="noopener noreferrer" className="text-white">Harsh Thakur</a></p>
           <div className="flex items-center gap-4">
             <a href="#" className="transition hover:text-white">Privacy</a>
             <a href="#" className="transition hover:text-white">Terms</a>
