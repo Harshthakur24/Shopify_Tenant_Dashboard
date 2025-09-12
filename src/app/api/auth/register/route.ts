@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok: true, message }, { status: 201 });
   } catch (err: unknown) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+    if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       const target = (err.meta?.target as string[] | undefined)?.join(", ") ?? "";
       if (target.includes("email")) {
         return NextResponse.json({ error: "Email is already registered" }, { status: 409 });
