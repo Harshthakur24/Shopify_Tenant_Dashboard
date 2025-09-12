@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     let message = "Account created successfully";
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
       // Reuse existing tenant if shopDomain is already connected
       let tenant = await tx.tenant.findUnique({ where: { shopDomain } });
       if (!tenant) {
