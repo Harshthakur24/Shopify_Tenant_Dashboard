@@ -1,46 +1,23 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { TypeAnimation } from "react-type-animation";
+import { motion } from "framer-motion";
+import CountUp from "react-countup";
+import { ArrowRight } from "lucide-react";
 
 
-function useTypewriter(words: string[], speed = 60, pause = 1000) {
-  const [index, setIndex] = useState(0);
-  const [sub, setSub] = useState(0);
-  const [dir, setDir] = useState<1 | -1>(1);
-  useEffect(() => {
-    const word = words[index % words.length];
-    const done = dir === 1 ? sub >= word.length : sub <= 0;
-    const timeout = setTimeout(() => {
-      if (done) {
-        if (dir === 1) {
-          setDir(-1);
-          setTimeout(() => setSub((s) => s - 1), pause);
-        } else {
-          setDir(1);
-          setIndex((i) => i + 1);
-          setSub(0);
-        }
-      } else {
-        setSub((s) => s + dir);
-      }
-    }, dir === 1 ? speed : speed / 2);
-    return () => clearTimeout(timeout);
-  }, [words, index, sub, dir, speed, pause]);
-  return words[index % words.length].slice(0, sub);
-}
 
 export default function Home() {
-  const typed = useTypewriter([
-    "Multi-tenant",
-    "Real-time",
-    "Production-ready",
-    "Insightful",
-  ]);
-
-
-
+  const featuresRef = useRef<HTMLDivElement | null>(null);
+  const heroImage = "/globe.svg";
+  const dessertImage = "/window.svg";
+  const healthyImage = "/vercel.svg";
   return (
     <div className="min-h-dvh bg-white text-neutral-900">
+      {/* Top navbar with auto-hide */}
+      <AutoHideNavbar />
       {/* Hero */}
       <section className="relative isolate overflow-hidden px-4 py-24 sm:py-28">
         {/* Subtle blue background accents */}
@@ -67,20 +44,46 @@ export default function Home() {
               </span>
               Shopify Data Ingestion & Insights
             </span>
-            <h1 className="mt-6 text-5xl font-bold tracking-tight sm:text-6xl [text-wrap:balance]">
-              Build <span className="text-blue-600">better</span> decisions with
-              <span className="ml-2 inline-block bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 bg-clip-text text-transparent animate-gradient">{typed}</span>
+            <h1 className="mt-6 text-7xl font-bold tracking-tight sm:text-7xl [text-wrap:balance]">
+              <span className="block">Build <span className="text-blue-600">better</span></span>
+              <span className="block">decisions with</span>
+              <span className="block">
+                <span className="ml-2 inline-block bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 bg-clip-text text-transparent [animation:gradient_123_infinite_4s_ease-in-out_infinite]">
+                  <TypeAnimation
+                    sequence={[
+                      "Smart Store",
+                      2000,
+                      "Dashboard",
+                      2000,
+                      "Analytics",
+                      2000,
+                      "Metrics",
+                      2000,
+                    ]}
+                    speed={40}
+                    repeat={Infinity}
+                  />
+                </span>
+              </span>
             </h1>
+
+            <style jsx>{`
+              @keyframes gradient_123_infinite {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+              }
+            `}</style>
             <p className="mt-6 text-lg leading-relaxed text-neutral-600 [text-wrap:balance]">
               Ingest customers, orders, and products from Shopify. Visualize KPIs, trends, and top customers with a beautiful, mobile-first dashboard.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/dashboard"
-                className="group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-blue-600 px-6 py-3.5 font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
+                className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-blue-600 px-6 py-3.5 font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
               >
-                <span className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700" />
-                <span className="relative flex items-center gap-2">
+                <button className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-full hover:scale-105 hover:shadow-lg duration-300 hover:pointer-cursor" />
+                <span className="relative flex items-center gap-2 rounded-full">
                   Go to Dashboard
                   <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -89,7 +92,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/login"
-                className="group inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white px-6 py-3.5 font-semibold text-neutral-900 transition-all hover:bg-neutral-50 hover:shadow-lg"
+                className="group inline-flex items-center justify-center rounded-full border border-neutral-200 bg-white px-6 py-3.5 font-semibold text-neutral-900 transition-all hover:bg-neutral-50 hover:shadow-lg hover:cursor-pointer"
               >
                 <span className="relative flex items-center gap-2">
                   Login
@@ -101,15 +104,142 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Inline quick login */}
-          <div className="mt-8 flex justify-center">
-            <InlineLogin />
+
+        </div>
+      </section>
+
+      <section className="py-20 bg-gradient-to-b from-white to-gray-50" id="features">
+        <div>
+          {[
+            {
+              title: "One‑click Shopify onboarding",
+              description:
+                "Connect your store with an Admin API token. We immediately fetch products, orders and customers so you can start analyzing within minutes.",
+              image: heroImage,
+              reverse: false,
+            },
+            {
+              title: "Reliable data sync",
+              description:
+                "Background jobs and webhook hooks keep your catalog and order data up‑to‑date while respecting Shopify rate limits.",
+              image: dessertImage,
+              reverse: true,
+            },
+            {
+              title: "Beautiful, actionable analytics",
+              description:
+                "Understand revenue, AOV, top products and repeat customers with a responsive, mobile‑first dashboard.",
+              image: healthyImage,
+              reverse: false,
+            },
+            {
+              title: "Multi‑tenant and production‑ready",
+              description:
+                "Tenant isolation, JWT auth and Prisma/Postgres built‑in, so you can safely host multiple stores from a single instance.",
+              image: healthyImage,
+              reverse: true,
+            },
+          ].map((section, index) => (
+            <motion.section
+              key={index}
+              ref={featuresRef}
+              className={`py-24 px-6 lg:px-12 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                }`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div
+                className={`max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center ${section.reverse ? "md:flex-row-reverse" : ""
+                  }`}
+              >
+                <div className={section.reverse ? "md:order-2" : ""}>
+                  <motion.h2
+                    className="text-4xl md:text-5xl font-bold mb-6 leading-tight tracking-tight"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {section.title}
+                  </motion.h2>
+                  <motion.p
+                    className="text-neutral-600 mb-8 text-lg leading-relaxed"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {section.description}
+                  </motion.p>
+                  <motion.button
+                    whileHover={{
+                      scale: 1.05,
+                      boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                    className="group inline-flex items-center space-x-3 bg-blue-600 px-6 py-5 rounded-full text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-lg hover:scale-105 duration-300 hover:pointer-cursor"
+                  >
+                    <span>Connect your store</span>
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                  </motion.button>
+                </div>
+                <motion.div
+                  className={`relative ${section.reverse ? "md:order-1" : ""}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="relative h-[600px] overflow-hidden rounded-2xl shadow-2xl">
+                    <Image
+                      src={section.image}
+                      alt={section.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
+                      className="object-cover transform transition-transform duration-700 hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.section>
+          ))}
+        </div>
+      </section>
+
+      {/* Statistics Section */}
+      <section className="bg-black text-white py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {[
+              { number: 1000, label: "Active Users", suffix: "+" },
+              { number: 5000, label: "Recipes", suffix: "+" },
+              { number: 100, label: "Expert Chefs", suffix: "+" },
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+                className="text-center"
+              >
+                <div className="text-5xl font-bold mb-2">
+                  <CountUp
+                    start={0}
+                    end={stat.number}
+                    duration={2}
+                    suffix={stat.suffix}
+                    enableScrollSpy
+                  />
+                </div>
+                <div className="text-gray-400">{stat.label}</div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Preview analytics */}
-      <section className="px-4 pb-16">
+      {/* <section className="px-4 pb-16">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <KpiCard title="Customers" value="1,248" />
@@ -140,10 +270,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Feature grid */}
-      <section className="px-4 pb-20">
+      {/* <section className="px-4 pb-20">
         <div className="mx-auto max-w-7xl">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <FeatureCard title="Multi-tenant" desc="Strict tenant isolation with scoped IDs and JWT auth." />
@@ -152,218 +282,180 @@ export default function Home() {
             <FeatureCard title="Charts" desc="Trends & KPIs with beautiful, responsive charts." />
           </div>
         </div>
-      </section>
+      </section> */}
+      <Footer />
     </div>
   );
 }
 
-function KpiCard({ title, value, highlight = false }: { title: string; value: string; highlight?: boolean }) {
+function AutoHideNavbar() {
+  const [hidden, setHidden] = useState(false);
+  const [drawer, setDrawer] = useState(false);
+  useEffect(() => {
+    let last = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y > last && y > 80) setHidden(true);
+      else setHidden(false);
+      last = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
-    <div
-      className={`group relative overflow-hidden rounded-xl border p-6 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg
-        ${highlight
-          ? "border-emerald-200/50 bg-emerald-50/30 dark:border-emerald-800/30 dark:bg-emerald-900/20"
-          : "border-neutral-200/50 bg-white/30 dark:border-neutral-800/30 dark:bg-neutral-900/30"
-        } backdrop-blur-md`}
-    >
-      {/* Gradient overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-transparent dark:via-white/5 dark:to-white/10" />
-
-      {/* Glow effect */}
-      <div className={`absolute -inset-px rounded-xl bg-gradient-to-br opacity-0 blur-sm transition-all duration-500 group-hover:opacity-100
-        ${highlight ? "from-emerald-400/20 via-emerald-500/10 to-blue-500/20" : "from-blue-400/10 via-purple-500/10 to-emerald-500/10"}`}
-      />
-
-      {/* Content */}
-      <div className="relative">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium uppercase tracking-wider text-neutral-600 dark:text-neutral-400">{title}</p>
-          <div className="h-px flex-1 bg-neutral-200/50 dark:bg-neutral-700/50" />
-        </div>
-        <p className="mt-3 text-4xl font-bold tracking-tight text-neutral-900 dark:text-white">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-function FeatureCard({ title, desc }: { title: string; desc: string }) {
-  // Get icon based on title
-  const getIcon = (title: string) => {
-    switch (title) {
-      case "Multi-tenant":
-        return (
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-        );
-      case "Prisma + Postgres":
-        return (
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
-          </svg>
-        );
-      case "Shopify APIs":
-        return (
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        );
-      case "Charts":
-        return (
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="group relative overflow-hidden rounded-xl border border-neutral-200/50 bg-white/30 p-6 backdrop-blur-md transition-all duration-300 hover:scale-[1.02] hover:shadow-lg dark:border-neutral-800/30 dark:bg-neutral-900/30">
-      {/* Gradient overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-transparent dark:via-white/5 dark:to-white/10" />
-
-      {/* Glow effect */}
-      <div className="absolute -inset-px rounded-xl bg-gradient-to-br from-blue-400/10 via-purple-500/10 to-emerald-500/10 opacity-0 blur-sm transition-all duration-500 group-hover:opacity-100" />
-
-      {/* Content */}
-      <div className="relative">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100/50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-            {getIcon(title)}
-          </div>
-          <p className="font-semibold text-neutral-900 dark:text-white">{title}</p>
-        </div>
-        <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">{desc}</p>
-      </div>
-    </div>
-  );
-}
-
-function InlineLogin() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password }) });
-    setLoading(false);
-    if (res.ok) {
-      window.location.href = "/dashboard";
-    } else {
-      const data = await res.json().catch(() => ({ error: "An unexpected error occurred" } as { error: string }));
-      setError(data.error || "Login failed");
-    }
-  }
-
-  return (
-    <div className="mt-12 max-w-md rounded-xl border border-neutral-200/50 bg-white/30 p-6 backdrop-blur-md transition-all duration-300 hover:shadow-lg dark:border-neutral-800/30 dark:bg-neutral-900/30">
-      {/* Gradient overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-transparent via-white/5 to-white/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 dark:from-transparent dark:via-white/5 dark:to-white/10" />
-
-      <div className="relative">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100/50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">Quick Login</h3>
-        </div>
-
-        <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
-          <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              Email
-            </label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                </svg>
+    <>
+      <div className={`fixed inset-x-0 top-0 z-40 transition-transform duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mt-4 rounded-2xl bg-white/70 px-4 py-3 shadow-lg ring-1 ring-blue-100/60 backdrop-blur-xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button aria-label="Open menu" onClick={() => setDrawer(true)} className="rounded-xl border border-blue-200/60 bg-white/70 p-2 text-blue-700 shadow-sm transition hover:border-blue-300 hover:bg-white">
+                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 text-white">P</span>
+                  <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Producti</span>
+                </div>
               </div>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@store.com"
-                required
-                className="w-full rounded-lg border border-neutral-200 bg-white pl-10 pr-4 py-2.5 text-sm transition-colors placeholder:text-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-neutral-800 dark:bg-neutral-900 dark:placeholder:text-neutral-600"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="password" className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-              Password
-            </label>
-            <div className="relative">
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-500">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
+              <nav className="hidden items-center gap-1 sm:flex">
+                <a href="#features" className="rounded-full px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">Features</a>
+                <a href="#pricing" className="rounded-full px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">Pricing</a>
+                <a href="/dashboard" className="rounded-full px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100">Dashboard</a>
+              </nav>
+              <div className="hidden items-center gap-2 sm:flex">
+                <a href="/login" className="rounded-full px-3 py-1.5 text-sm font-semibold text-blue-700 hover:bg-blue-50">Login</a>
+                <a href="/signup" className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:shadow-md">Get started</a>
               </div>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                className="w-full rounded-lg border border-neutral-200 bg-white pl-10 pr-4 py-2.5 text-sm transition-colors placeholder:text-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-neutral-800 dark:bg-neutral-900 dark:placeholder:text-neutral-600"
-              />
             </div>
+            <div className="mt-2 h-px w-full bg-gradient-to-r from-transparent via-blue-200/60 to-transparent" />
           </div>
+        </div>
+      </div>
+      <div className={`fixed inset-0 z-50 ${drawer ? "" : "pointer-events-none"}`}>
+        <div className={`absolute inset-0 bg-black/30 backdrop-blur-[2px] transition-opacity ${drawer ? "opacity-100" : "opacity-0"}`} onClick={() => setDrawer(false)} />
+        <div className={`absolute left-0 top-0 h-full w-72 transform bg-white shadow-2xl transition-transform duration-300 ${drawer ? "translate-x-0" : "-translate-x-full"}`}>
+          <div className="flex items-center justify-between border-b px-4 py-4">
+            <span className="text-sm font-semibold">Menu</span>
+            <button onClick={() => setDrawer(false)} aria-label="Close" className="rounded-md p-1 hover:bg-neutral-100">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <nav className="p-4">
+            <a href="#features" className="block rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">Features</a>
+            <a href="#pricing" className="mt-1 block rounded-lg px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50">Pricing</a>
+            <a href="/login" className="mt-1 block rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700">Login</a>
+          </nav>
+        </div>
+      </div>
+    </>
+  );
+}
 
-          {error && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-500/10 dark:text-red-400">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p>{error}</p>
-            </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="group relative mt-2 inline-flex items-center justify-center overflow-hidden rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-neutral-900"
-          >
-            <span className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700" />
-            <span className="relative flex items-center gap-2">
-              {loading ? (
-                <>
-                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  Signing in...
-                </>
-              ) : (
-                <>
-                  Sign in
-                  <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </>
-              )}
-            </span>
-          </button>
-
-          <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">
-            New here?{" "}
-            <Link href="/login" className="font-medium text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-              Register on the dashboard
+function Footer() {
+  return (
+    <footer className="bg-neutral-950 text-neutral-300">
+      <div className="border-y border-neutral-800 bg-gradient-to-r from-blue-600/10 via-transparent to-indigo-600/10">
+        <div className="mx-auto max-w-7xl px-6 py-10 flex flex-col items-center justify-between gap-4 md:flex-row">
+          <h3 className="text-center text-2xl font-semibold tracking-tight text-white md:text-left">
+            Ready to build smarter decisions?
+          </h3>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/signup"
+              className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:shadow-md"
+            >
+              Get started
             </Link>
-          </p>
-        </form>
+            <Link
+              href="/dashboard"
+              className="rounded-full border border-neutral-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-900"
+            >
+              View demo
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
+      <div className="mx-auto max-w-7xl px-6 py-12">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 text-white">P</span>
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Producti</span>
+            </div>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-neutral-400">
+              Ingest Shopify data and turn it into actionable insights with a modern, mobile‑first dashboard.
+            </p>
+            <div className="mt-6 flex items-center gap-3">
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-neutral-800 p-2 text-neutral-400 transition hover:border-neutral-700 hover:bg-neutral-900 hover:text-white"
+                aria-label="Twitter"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M22 5.8c-.7.3-1.4.5-2.2.6.8-.5 1.3-1.1 1.6-2-.8.5-1.6.8-2.6 1-1.5-1.6-4-1.1-5.1.9-.5 1-.4 2.1 0 3.1-3.2-.2-6-1.7-7.9-4.1-1.1 2 .1 4.3 2.1 5-.6 0-1.2-.2-1.7-.5 0 2.1 1.5 3.8 3.5 4.2-.4.1-.8.1-1.2 0 .3 1.8 2 3.1 3.9 3.1-1.6 1.3-3.6 1.9-5.6 1.7 2 1.3 4.3 2 6.7 2 8 0 12.5-6.8 12.2-12.9.8-.6 1.4-1.2 1.9-2z" />
+                </svg>
+              </a>
+              <a
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full border border-neutral-800 p-2 text-neutral-400 transition hover:border-neutral-700 hover:bg-neutral-900 hover:text-white"
+                aria-label="GitHub"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M12 2C6.5 2 2 6.6 2 12.3c0 4.5 2.9 8.3 6.9 9.6.5.1.7-.2.7-.5v-1.9c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.2-1.5-1.2-1.5-1-.7.1-.7.1-.7 1.1.1 1.7 1.2 1.7 1.2 1 .1.7 1.9 2.6 1.4.1-.8.4-1.3.8-1.6-2.3-.3-4.7-1.2-4.7-5.2 0-1.1.4-2 1.1-2.8-.1-.3-.5-1.4.1-2.9 0 0 .9-.3 2.9 1.1.9-.3 1.8-.4 2.8-.4s1.9.1 2.8.4c2-1.4 2.9-1.1 2.9-1.1.6 1.5.2 2.6.1 2.9.7.8 1.1 1.7 1.1 2.8 0 4-2.4 4.9-4.7 5.2.4.3.8 1 .8 2.1v3.1c0 .3.2.6.7.5 4-1.3 6.9-5.2 6.9-9.6C22 6.6 17.5 2 12 2z" clipRule="evenodd" />
+                </svg>
+              </a>
+              <a
+                href="mailto:hello@example.com"
+                className="rounded-full border border-neutral-800 p-2 text-neutral-400 transition hover:border-neutral-700 hover:bg-neutral-900 hover:text-white"
+                aria-label="Email"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M2 6.5A2.5 2.5 0 0 1 4.5 4h15A2.5 2.5 0 0 1 22 6.5v11A2.5 2.5 0 0 1 19.5 20h-15A2.5 2.5 0 0 1 2 17.5v-11Zm2.1-.5a.4.4 0 0 0-.1.3v.2l7.5 5.2 7.5-5.2v-.2a.4.4 0 0 0-.1-.3.5.5 0 0 0-.3-.1h-14a.5.5 0 0 0-.3.1ZM20 8.9l-6.9 4.8a1.5 1.5 0 0 1-1.7 0L4.5 8.9V17c0 .3.2.5.5.5h14c.3 0 .5-.2.5-.5V8.9Z" />
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h4 className="mb-3 text-sm font-semibold tracking-wide text-white">Product</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#features" className="text-neutral-400 transition hover:text-white">Features</a></li>
+              <li><a href="/dashboard" className="text-neutral-400 transition hover:text-white">Dashboard</a></li>
+              <li><a href="#pricing" className="text-neutral-400 transition hover:text-white">Pricing</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="mb-3 text-sm font-semibold tracking-wide text-white">Resources</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="text-neutral-400 transition hover:text-white">Documentation</a></li>
+              <li><a href="#" className="text-neutral-400 transition hover:text-white">Support</a></li>
+              <li><a href="#" className="text-neutral-400 transition hover:text-white">Status</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="mb-3 text-sm font-semibold tracking-wide text-white">Company</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="text-neutral-400 transition hover:text-white">About</a></li>
+              <li><a href="#" className="text-neutral-400 transition hover:text-white">Careers</a></li>
+              <li><a href="#" className="text-neutral-400 transition hover:text-white">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-neutral-800 pt-6 text-sm text-neutral-500 sm:flex-row">
+          <p>© {new Date().getFullYear()} Producti. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <a href="#" className="transition hover:text-white">Privacy</a>
+            <a href="#" className="transition hover:text-white">Terms</a>
+            <a href="#" className="transition hover:text-white">Security</a>
+          </div>
+        </div>
+      </div>
+    </footer>
   );
 }
+
+

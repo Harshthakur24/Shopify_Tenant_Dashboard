@@ -27,11 +27,14 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
-        <Toaster position="top-right" toastOptions={{
-          style: { background: "#111827", color: "white" },
-          success: { style: { background: "#16a34a" } },
-          error: { style: { background: "#b91c1c" } }
-        }} />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: { background: "#ffffff", color: "#111827" },
+            success: { style: { background: "#ffffff", color: "#16a34a" } },
+            error: { style: { background: "#ffffff", color: "#b91c1c" } },
+          }}
+        />
       </body>
     </html>
   );
