@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import type { Prisma } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     let message = "Account created successfully";
 
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Reuse existing tenant if shopDomain is already connected
       let tenant = await tx.tenant.findUnique({ where: { shopDomain } });
       if (!tenant) {
