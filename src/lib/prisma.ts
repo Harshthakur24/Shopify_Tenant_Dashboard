@@ -1,17 +1,17 @@
-import * as Prisma from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
-// Narrow in a way that avoids named import type resolution issues
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const { PrismaClient } = Prisma as unknown as { PrismaClient: new (...args: any[]) => any };
-
-const globalForPrisma = global as unknown as { prisma?: unknown };
+declare global {
+  var __globalPrisma__: PrismaClient | undefined;
+}
 
 export const prisma =
-  (globalForPrisma.prisma as unknown) ??
+  globalThis.__globalPrisma__ ??
   new PrismaClient({
-    log: ["error", "warn"],
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== "production") {
+  globalThis.__globalPrisma__ = prisma;
+}
 
 

@@ -13,6 +13,19 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  outputFileTracingRoot: __dirname,
+  experimental: {
+    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push({
+        '@prisma/client': '@prisma/client',
+        'bcryptjs': 'bcryptjs'
+      });
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
