@@ -1,104 +1,12 @@
-// Native email service using Gmail API via fetch - Vercel compatible
-async function sendEmailViaSMTP({
-  to,
-  subject,
-  html,
-  text,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-  text: string;
-}) {
-  const username = process.env.GMAIL_USER;
-  const password = process.env.GMAIL_APP_PASSWORD;
+import nodemailer from 'nodemailer';
 
-  if (!username || !password) {
-    throw new Error('Gmail credentials not configured');
-  }
-
-  // Create email message in RFC 2822 format
-  const boundary = `boundary_${Date.now()}`;
-  const message = [
-    `From: ${username}`,
-    `To: ${to}`,
-    `Subject: ${subject}`,
-    `MIME-Version: 1.0`,
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/plain; charset=UTF-8',
-    '',
-    text,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/html; charset=UTF-8',
-    '',
-    html,
-    '',
-    `--${boundary}--`,
-  ].join('\r\n');
-
-  // Convert to base64
-  const encodedMessage = Buffer.from(message).toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-
-  try {
-    // Use Gmail API to send email
-    const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${await getAccessToken()}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        raw: encodedMessage,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Gmail API error: ${response.status} ${response.statusText}`);
-    }
-
-    const result = await response.json();
-    return { success: true, messageId: result.id };
-  } catch (error) {
-    console.error('Gmail API send error:', error);
-    throw error;
-  }
-}
-
-// Fallback to simple SMTP approach for development
-async function sendEmailViaSimpleSMTP({
-  to,
-  subject,
-  html,
-  text,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-  text: string;
-}) {
-  // For now, return success without actually sending in production builds
-  // This prevents build failures while maintaining functionality
-  console.log(`Email would be sent to: ${to}`);
-  console.log(`Subject: ${subject}`);
-  console.log(`Content length - HTML: ${html.length}, Text: ${text.length}`);
-  
-  return { 
-    success: true, 
-    messageId: `mock_${Date.now()}`,
-    note: 'Email sending disabled for build compatibility'
-  };
-}
-
-async function getAccessToken(): Promise<string> {
-  // This would normally use OAuth2, but for simplicity we'll use the fallback method
-  throw new Error('OAuth2 not implemented, using fallback method');
-}
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 export interface PasswordResetEmailOptions {
   to: string;
@@ -288,27 +196,9 @@ export async function sendPasswordResetEmail({ to, resetUrl, userName }: Passwor
   };
 
   try {
-    // Try Gmail API first, fallback to simple method
-    let result;
-    try {
-      result = await sendEmailViaSMTP({
-        to: mailOptions.to,
-        subject: mailOptions.subject,
-        html: mailOptions.html,
-        text: mailOptions.text,
-      });
-    } catch (apiError) {
-      console.log('Gmail API failed, using fallback method:', apiError);
-      result = await sendEmailViaSimpleSMTP({
-        to: mailOptions.to,
-        subject: mailOptions.subject,
-        html: mailOptions.html,
-        text: mailOptions.text,
-      });
-    }
-    
-    console.log('Password reset email sent:', result.messageId);
-    return result;
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Password reset email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Failed to send password reset email:', error);
     throw new Error('Failed to send password reset email');
@@ -317,10 +207,7 @@ export async function sendPasswordResetEmail({ to, resetUrl, userName }: Passwor
 
 export async function verifyEmailConfiguration() {
   try {
-    // Check if environment variables are set
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      return false;
-    }
+    await transporter.verify();
     return true;
   } catch (error) {
     console.error('Email configuration error:', error);

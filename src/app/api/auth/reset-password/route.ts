@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,14 +20,50 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // For build compatibility, we'll implement the actual functionality later
-    // This prevents build failures while maintaining the API structure
-    console.log(`Password reset attempted with token: ${token.substring(0, 8)}...`);
+    // Find and validate reset token
+    const resetToken = await prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true }
+    });
+
+    if (!resetToken) {
+      return NextResponse.json({
+        error: "Invalid or expired reset token"
+      }, { status: 400 });
+    }
+
+    if (resetToken.used) {
+      return NextResponse.json({
+        error: "Reset token has already been used"
+      }, { status: 400 });
+    }
+
+    if (resetToken.expiresAt < new Date()) {
+      return NextResponse.json({
+        error: "Reset token has expired"
+      }, { status: 400 });
+    }
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    // Update user password and mark token as used
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: resetToken.userId },
+        data: { passwordHash }
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: resetToken.id },
+        data: { used: true }
+      })
+    ]);
+
+    console.log(`Password reset completed for user: ${resetToken.user.email}`);
 
     return NextResponse.json({
       success: true,
-      message: "Password has been reset successfully. You can now login with your new password.",
-      note: "Password reset functionality will be implemented after successful deployment"
+      message: "Password has been reset successfully. You can now login with your new password."
     });
 
   } catch (error) {
@@ -48,13 +86,22 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // For build compatibility, we'll implement the actual functionality later
-    console.log(`Token verification requested: ${token.substring(0, 8)}...`);
+    // Find and validate reset token
+    const resetToken = await prisma.passwordResetToken.findUnique({
+      where: { token },
+      include: { user: true }
+    });
+
+    if (!resetToken || resetToken.used || resetToken.expiresAt < new Date()) {
+      return NextResponse.json({
+        valid: false,
+        error: "Invalid or expired reset token"
+      }, { status: 400 });
+    }
 
     return NextResponse.json({
       valid: true,
-      email: "demo@example.com",
-      note: "Token verification functionality will be implemented after successful deployment"
+      email: resetToken.user.email
     });
 
   } catch (error) {

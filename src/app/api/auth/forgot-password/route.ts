@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { sendPasswordResetEmail } from "@/lib/email";
+import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,15 +18,49 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
-    // For build compatibility, we'll implement the actual functionality later
-    // This prevents build failures while maintaining the API structure
-    console.log(`Password reset requested for: ${email}`);
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email }
+    });
 
     // Always return success message (security best practice)
+    // Even if user doesn't exist, we don't reveal that information
+    if (user) {
+      // Generate secure reset token
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      
+      // Set expiration to 1 hour from now
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+      // Store reset token in database
+      await prisma.passwordResetToken.create({
+        data: {
+          token: resetToken,
+          userId: user.id,
+          expiresAt,
+        },
+      });
+
+      // Create reset URL
+      const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+
+      // Send password reset email
+      try {
+        await sendPasswordResetEmail({
+          to: email,
+          resetUrl,
+          userName: user.email.split('@')[0], // Use email prefix as name
+        });
+        console.log(`Password reset email sent to: ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send password reset email:', emailError);
+        // Don't throw error to maintain security - user shouldn't know if email failed
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: "If an account with that email exists, we've sent you a password reset link.",
-      note: "Password reset functionality will be implemented after successful deployment"
+      message: "If an account with that email exists, we've sent you a password reset link."
     });
 
   } catch (error) {
