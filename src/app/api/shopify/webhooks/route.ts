@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { prisma } from '@/lib/prisma';
+import { cacheDel } from '@/lib/redis';
 
 // Webhook payload interfaces
 interface WebhookOrder {
@@ -164,27 +166,85 @@ export async function POST(request: NextRequest) {
 async function handleOrderCreated(order: WebhookOrder) {
   console.log(`New order created: ${order.name} for $${order.total_price}`);
   
-  // Here you could:
-  // - Send notifications
-  // - Update analytics cache
-  // - Trigger email campaigns
-  // - Update inventory forecasts
-  // - Log to analytics database
-  
-  // Example: Log to console for now
-  console.log('Order details:', {
-    id: order.id,
-    email: order.email,
-    total: order.total_price,
-    currency: order.currency,
-    customer: order.customer ? {
-      id: order.customer.id,
-      email: order.customer.email,
-      first_name: order.customer.first_name,
-      last_name: order.customer.last_name
-    } : null,
-    line_items: order.line_items?.length || 0
-  });
+  try {
+    // Find or create tenant using shop domain
+    const shopDomain = 'webhook-store.myshopify.com'; // Use default shop
+    let tenant = await prisma.tenant.findUnique({ where: { shopDomain } });
+    
+    if (!tenant) {
+      tenant = await prisma.tenant.create({
+        data: {
+          name: 'Webhook Store',
+          shopDomain: shopDomain,
+          accessToken: 'webhook-token'
+        }
+      });
+    }
+
+    // Store order data
+    await prisma.order.upsert({
+      where: { 
+        tenantId_shopId: { 
+          tenantId: tenant.id, 
+          shopId: order.id 
+        } 
+      },
+      update: {
+        totalAmount: parseFloat(order.total_price || '0'),
+        currency: order.currency || 'USD',
+        processedAt: new Date(),
+      },
+      create: {
+        tenantId: tenant.id,
+        shopId: order.id,
+        totalAmount: parseFloat(order.total_price || '0'),
+        currency: order.currency || 'USD',
+        processedAt: new Date(),
+      }
+    });
+
+    // Store customer if provided
+    if (order.customer) {
+      await prisma.customer.upsert({
+        where: { 
+          tenantId_shopId: { 
+            tenantId: tenant.id, 
+            shopId: order.customer.id 
+          } 
+        },
+        update: {
+          email: order.customer.email,
+          firstName: order.customer.first_name,
+          lastName: order.customer.last_name,
+        },
+        create: {
+          tenantId: tenant.id,
+          shopId: order.customer.id,
+          email: order.customer.email,
+          firstName: order.customer.first_name,
+          lastName: order.customer.last_name,
+          totalSpend: parseFloat(order.total_price || '0'),
+        }
+      });
+    }
+
+    // Log webhook event using existing Event model
+    await prisma.event.create({
+      data: {
+        tenantId: tenant.id,
+        topic: 'orders/create',
+        payload: JSON.parse(JSON.stringify(order)),
+      }
+    });
+
+    // Clear cache to refresh dashboard data
+    await cacheDel(`products:${shopDomain}`);
+    
+    console.log(`✅ Order webhook processed: ${order.name}`);
+    
+  } catch (error) {
+    console.error('❌ Error processing order webhook:', error);
+  }
 }
 
 async function handleOrderUpdated(order: WebhookOrder) {
@@ -210,15 +270,62 @@ async function handleOrderFulfilled(order: WebhookOrder) {
 async function handleProductCreated(product: WebhookProduct) {
   console.log(`New product created: ${product.title}`);
   
-  console.log('Product details:', {
-    id: product.id,
-    title: product.title,
-    vendor: product.vendor,
-    product_type: product.product_type,
-    status: product.status,
-    variants: product.variants?.length || 0,
-    images: product.images?.length || 0
-  });
+  try {
+    // Find or create tenant
+    const shopDomain = 'webhook-store.myshopify.com';
+    let tenant = await prisma.tenant.findUnique({ where: { shopDomain } });
+    
+    if (!tenant) {
+      tenant = await prisma.tenant.create({
+        data: {
+          name: 'Webhook Store',
+          shopDomain: shopDomain,
+          accessToken: 'webhook-token'
+        }
+      });
+    }
+
+    // Extract price from variants
+    const variants = product.variants as Array<{ price?: string }> || [];
+    const price = variants.length > 0 ? parseFloat(variants[0].price || '0') : 0;
+
+    // Store product data
+    await prisma.product.upsert({
+      where: { 
+        tenantId_shopId: { 
+          tenantId: tenant.id, 
+          shopId: product.id 
+        } 
+      },
+      update: {
+        title: product.title,
+        price: price,
+      },
+      create: {
+        tenantId: tenant.id,
+        shopId: product.id,
+        title: product.title,
+        price: price,
+      }
+    });
+
+    // Log webhook event
+    await prisma.event.create({
+      data: {
+        tenantId: tenant.id,
+        topic: 'products/create',
+        payload: JSON.parse(JSON.stringify(product)),
+      }
+    });
+
+    // Clear cache
+    await cacheDel(`products:${shopDomain}`);
+    
+    console.log(`✅ Product webhook processed: ${product.title}`);
+    
+  } catch (error) {
+    console.error('❌ Error processing product webhook:', error);
+  }
 }
 
 async function handleProductUpdated(product: WebhookProduct) {

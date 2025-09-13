@@ -815,7 +815,7 @@ function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-5">
           <div className="md:col-span-2">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 text-white">P</span>
+              <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-blue-600 to-indigo-600 text-white">S</span>
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Shopify Tenant Store</span>
             </div>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-neutral-400">
@@ -823,7 +823,7 @@ function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-3">
               <a
-                href="https://twitter.com"
+                href="https://x.com/HarshThaku44904"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full border border-neutral-800 p-2 text-neutral-400 transition hover:border-neutral-700 hover:bg-neutral-900 hover:text-white"
@@ -834,7 +834,7 @@ function Footer() {
                 </svg>
               </a>
               <a
-                href="https://github.com"
+                href="https://github.com/Harshthakur24"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-full border border-neutral-800 p-2 text-neutral-400 transition hover:border-neutral-700 hover:bg-neutral-900 hover:text-white"
@@ -845,7 +845,7 @@ function Footer() {
                 </svg>
               </a>
               <a
-                href="mailto:hello@example.com"
+                href="thakur2004harsh@gmail.com"
                 className="rounded-full border border-neutral-800 p-2 text-neutral-400 transition hover:border-neutral-700 hover:bg-neutral-900 hover:text-white"
                 aria-label="Email"
               >
@@ -881,7 +881,7 @@ function Footer() {
           </div>
         </div>
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-neutral-800 pt-6 text-sm text-neutral-500 sm:flex-row">
-          <p>© {new Date().getFullYear()} Shopify Tenant Store. All rights reserved. Made with ❤️ by <a href="https://github.com/Harshthakur24" target="_blank" rel="noopener noreferrer" className="text-white">Harsh Thakur</a></p>
+          <p>© {new Date().getFullYear()} Shopify Tenant Store. All rights reserved. Made with ❤️ by <a href="https://github.com/Harshthakur24" target="_blank" rel="noopener noreferrer" className="text-white">Harsh Thakur</a> for Xeno Assignment.</p>
           <div className="flex items-center gap-4">
             <a href="#" className="transition hover:text-white">Privacy</a>
             <a href="#" className="transition hover:text-white">Terms</a>

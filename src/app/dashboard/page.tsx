@@ -40,6 +40,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AreaChartStacked, BarChartMultiple, LineChartMultiple, PieChartLabel, RadarChartMultiple, RadialChartStacked } from "@/components/charts";
 import { transformPricesToBarChart, transformVendorsToLineChart, calculateTrend } from "@/lib/chart-utils";
+import { WebhookActivity } from "@/components/webhook-activity";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Tooltip, Legend, Title, Filler);
 
@@ -522,11 +523,13 @@ export default function ShopifyDashboard() {
                                         >
                                             View Product
                                         </a>
-                                        <button
+                                        <a
+                                            href={`https://xeno-assignment-store.myshopify.com/products/${product.handle ?? ''}`}
+                                            target="_blank"
                                             className="rounded-xl border border-blue-200 bg-white/80 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm backdrop-blur-lg transition hover:border-blue-300 hover:bg-white hover:translate-y-[-1px] hover:shadow-md active:translate-y-[1px]"
                                         >
                                             Manage Stock
-                                        </button>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -1203,6 +1206,21 @@ export default function ShopifyDashboard() {
                                         </div>
                                     );
                                 })()}
+                            </div>
+
+                            {/* Webhook Activity Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-2 rounded-lg">
+                                        <Zap className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-foreground">Webhook Activity</h2>
+                                        <p className="text-muted-foreground">Real-time Shopify webhook events and data updates</p>
+                                    </div>
+                                </div>
+
+                                <WebhookActivity />
                             </div>
 
                         </TabsContent>

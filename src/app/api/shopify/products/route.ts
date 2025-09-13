@@ -6,6 +6,29 @@ import { ensureSyncCron } from "@/lib/cron";
 
 export const dynamic = "force-dynamic";
 
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withDbRetry<T>(operation: () => Promise<T>, maxAttempts = 3, baseDelayMs = 500): Promise<T> {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await operation();
+    } catch (err) {
+      const code = (err as { code?: string }).code;
+      attempt += 1;
+      if (code === "P1001" && attempt < maxAttempts) {
+        const delay = baseDelayMs * attempt;
+        console.error(`DB unreachable (P1001). Retry ${attempt}/${maxAttempts - 1} in ${delay}ms`);
+        await sleep(delay);
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 export async function GET(request: NextRequest) {
   // Start background periodic sync (best effort) on first use
   ensureSyncCron();
@@ -23,37 +46,56 @@ export async function GET(request: NextRequest) {
 
   // 1) Auth cookie → use that tenant
   if (payload?.tenantId) {
-    const tenant = await prisma.tenant.findUnique({ where: { id: payload.tenantId } });
-    if (tenant?.shopDomain && tenant?.accessToken) {
-      shopDomain = tenant.shopDomain;
-      accessToken = tenant.accessToken || undefined;
-      usingFallback = false;
-      tenantId = tenant.id;
+    try {
+      const tenant = await withDbRetry(() => 
+        prisma.tenant.findUnique({ where: { id: payload.tenantId } })
+      );
+      if (tenant?.shopDomain && tenant?.accessToken) {
+        shopDomain = tenant.shopDomain;
+        accessToken = tenant.accessToken || undefined;
+        usingFallback = false;
+        tenantId = tenant.id;
+      }
+    } catch (error) {
+      console.error('Failed to fetch tenant from auth:', error);
+      // Continue with fallback
     }
   }
 
   // 2) Query param overrides for dev/tests: ?tenantId= or ?shop=
   if (usingFallback && (queryTenantId || queryShop)) {
-    const tenant = queryTenantId
-      ? await prisma.tenant.findUnique({ where: { id: queryTenantId } })
-      : await prisma.tenant.findUnique({ where: { shopDomain: String(queryShop) } });
-    if (tenant?.shopDomain && tenant?.accessToken) {
-      shopDomain = tenant.shopDomain;
-      accessToken = tenant.accessToken || undefined;
-      usingFallback = false;
-      tenantId = tenant.id;
+    try {
+      const tenant = queryTenantId
+        ? await withDbRetry(() => prisma.tenant.findUnique({ where: { id: queryTenantId } }))
+        : await withDbRetry(() => prisma.tenant.findUnique({ where: { shopDomain: String(queryShop) } }));
+      if (tenant?.shopDomain && tenant?.accessToken) {
+        shopDomain = tenant.shopDomain;
+        accessToken = tenant.accessToken || undefined;
+        usingFallback = false;
+        tenantId = tenant.id;
+      }
+    } catch (error) {
+      console.error('Failed to fetch tenant from query params:', error);
+      // Continue with fallback
     }
   }
 
   // 3) Single-tenant convenience: if exactly one tenant has a token, use it
   if (usingFallback) {
-    const tenantsWithToken = await prisma.tenant.findMany({ where: { accessToken: { not: null } } });
-    if (tenantsWithToken.length === 1) {
-      const t = tenantsWithToken[0];
-      shopDomain = t.shopDomain;
-      accessToken = t.accessToken || undefined;
-      usingFallback = false;
-      tenantId = t.id;
+    try {
+      const tenantsWithToken = await withDbRetry(() => 
+        prisma.tenant.findMany({ where: { accessToken: { not: null } } })
+      );
+      if (tenantsWithToken.length === 1) {
+        const t = tenantsWithToken[0];
+        shopDomain = t.shopDomain;
+        accessToken = t.accessToken || undefined;
+        usingFallback = false;
+        tenantId = t.id;
+      }
+    } catch (error) {
+      console.error('Failed to fetch tenants with tokens:', error);
+      // Continue with fallback
     }
   }
 
@@ -66,22 +108,33 @@ export async function GET(request: NextRequest) {
       if (!tenant) return;
       for (const p of products) {
         const price = Number(p?.variants?.[0]?.price ?? 0);
-        await prisma.product.upsert({
-          where: { tenantId_shopId: { tenantId: tenant, shopId: String(p.id) } },
-          update: { title: p.title ?? "", price },
-          create: { tenantId: tenant, shopId: String(p.id), title: p.title ?? "", price },
-        });
+        try {
+          await withDbRetry(() => prisma.product.upsert({
+            where: { tenantId_shopId: { tenantId: tenant, shopId: String(p.id) } },
+            update: { title: p.title ?? "", price },
+            create: { tenantId: tenant, shopId: String(p.id), title: p.title ?? "", price },
+          }));
+        } catch (error) {
+          console.error(`Failed to upsert product ${p.id}:`, error);
+          // Continue with next product
+        }
       }
     }
 
     // Helper: build a minimal Shopify-like payload from DB to serve quickly on cache miss
     async function buildDbPayload(tenant: string | undefined) {
       if (!tenant) return { products: [] as Array<unknown> };
-      const db = await prisma.product.findMany({
-        where: { tenantId: tenant },
-        select: { shopId: true, title: true, price: true, createdAt: true, updatedAt: true },
-        take: 1000,
-      });
+      let db;
+      try {
+        db = await withDbRetry(() => prisma.product.findMany({
+          where: { tenantId: tenant },
+          select: { shopId: true, title: true, price: true, createdAt: true, updatedAt: true },
+          take: 1000,
+        }));
+      } catch (error) {
+        console.error('Failed to fetch products from DB:', error);
+        return { products: [] as Array<unknown> };
+      }
 
       const products = db.map((p: Record<string, unknown>) => ({
         id: p.shopId,
