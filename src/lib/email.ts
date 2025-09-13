@@ -1,12 +1,20 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+// Create transporter lazily to avoid issues in edge environments
+let transporter: nodemailer.Transporter | null = null;
+
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+  }
+  return transporter;
+}
 
 export interface PasswordResetEmailOptions {
   to: string;
@@ -196,7 +204,8 @@ export async function sendPasswordResetEmail({ to, resetUrl, userName }: Passwor
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
+    const emailTransporter = getTransporter();
+    const info = await emailTransporter.sendMail(mailOptions);
     console.log('Password reset email sent:', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
@@ -207,7 +216,8 @@ export async function sendPasswordResetEmail({ to, resetUrl, userName }: Passwor
 
 export async function verifyEmailConfiguration() {
   try {
-    await transporter.verify();
+    const emailTransporter = getTransporter();
+    await emailTransporter.verify();
     return true;
   } catch (error) {
     console.error('Email configuration error:', error);

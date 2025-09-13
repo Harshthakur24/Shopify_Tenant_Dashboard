@@ -5,6 +5,14 @@ import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check for required environment variables
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      console.error('Email configuration missing');
+      return NextResponse.json({
+        error: "Email service is not properly configured. Please contact support."
+      }, { status: 500 });
+    }
+
     const body = await request.json();
     const { email } = body as { email: string };
 
