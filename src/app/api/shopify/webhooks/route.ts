@@ -45,6 +45,42 @@ interface WebhookInventoryLevel {
   updated_at: string;
 }
 
+// Minimal checkout/cart payloads
+interface WebhookCheckout {
+  id?: string;
+  token?: string;
+  email?: string;
+  created_at?: string;
+  updated_at?: string;
+  line_items?: Array<unknown>;
+}
+
+interface WebhookCart {
+  id?: string;
+  token?: string;
+  created_at?: string;
+  updated_at?: string;
+  line_items?: Array<unknown>;
+}
+
+// Resolve or create a tenant from the incoming webhook's shop domain
+async function resolveTenantFromShop(shop: string | null) {
+  const shopDomain = String(shop || '').toLowerCase();
+  if (!shopDomain) {
+    throw new Error('Missing shop domain');
+  }
+  let tenant = await prisma.tenant.findUnique({ where: { shopDomain } });
+  if (!tenant) {
+    tenant = await prisma.tenant.create({
+      data: {
+        name: shopDomain,
+        shopDomain,
+      },
+    });
+  }
+  return tenant;
+}
+
 // Webhook verification
 function verifyWebhook(rawBody: string, signature: string): boolean {
   const webhookSecret = process.env.SHOPIFY_WEBHOOK_SECRET;
@@ -91,12 +127,15 @@ export async function POST(request: NextRequest) {
 
     const data = JSON.parse(rawBody);
     
+    // Resolve tenant from shop domain (create minimal tenant if missing)
+    const tenant = await resolveTenantFromShop(shop);
+    
     console.log(`Received webhook: ${topic} from ${shop}`);
 
     // Handle different webhook topics
     switch (topic) {
       case 'orders/create':
-        await handleOrderCreated(data);
+        await handleOrderCreated(data, tenant.id, shop);
         break;
       
       case 'orders/updated':
@@ -116,7 +155,7 @@ export async function POST(request: NextRequest) {
         break;
       
       case 'products/create':
-        await handleProductCreated(data);
+        await handleProductCreated(data, tenant.id, shop);
         break;
       
       case 'products/update':
@@ -137,6 +176,20 @@ export async function POST(request: NextRequest) {
       
       case 'app/uninstalled':
         await handleAppUninstalled(data, shop);
+        break;
+
+      // Bonus: checkout/cart events
+      case 'checkouts/create':
+        await handleCheckoutCreated(data, tenant.id);
+        break;
+      case 'checkouts/update':
+        await handleCheckoutUpdated(data, tenant.id);
+        break;
+      case 'carts/create':
+        await handleCartCreated(data, tenant.id);
+        break;
+      case 'carts/update':
+        await handleCartUpdated(data, tenant.id);
         break;
       
       default:
@@ -163,29 +216,15 @@ export async function POST(request: NextRequest) {
 }
 
 // Webhook handlers
-async function handleOrderCreated(order: WebhookOrder) {
+async function handleOrderCreated(order: WebhookOrder, tenantId: string, shopDomain: string) {
   console.log(`New order created: ${order.name} for $${order.total_price}`);
   
   try {
-    // Find or create tenant using shop domain
-    const shopDomain = 'webhook-store.myshopify.com'; // Use default shop
-    let tenant = await prisma.tenant.findUnique({ where: { shopDomain } });
-    
-    if (!tenant) {
-      tenant = await prisma.tenant.create({
-        data: {
-          name: 'Webhook Store',
-          shopDomain: shopDomain,
-          accessToken: 'webhook-token'
-        }
-      });
-    }
-
     // Store order data
     await prisma.order.upsert({
       where: { 
         tenantId_shopId: { 
-          tenantId: tenant.id, 
+          tenantId, 
           shopId: order.id 
         } 
       },
@@ -195,7 +234,7 @@ async function handleOrderCreated(order: WebhookOrder) {
         processedAt: new Date(),
       },
       create: {
-        tenantId: tenant.id,
+        tenantId,
         shopId: order.id,
         totalAmount: parseFloat(order.total_price || '0'),
         currency: order.currency || 'USD',
@@ -208,7 +247,7 @@ async function handleOrderCreated(order: WebhookOrder) {
       await prisma.customer.upsert({
         where: { 
           tenantId_shopId: { 
-            tenantId: tenant.id, 
+            tenantId, 
             shopId: order.customer.id 
           } 
         },
@@ -218,7 +257,7 @@ async function handleOrderCreated(order: WebhookOrder) {
           lastName: order.customer.last_name,
         },
         create: {
-          tenantId: tenant.id,
+          tenantId,
           shopId: order.customer.id,
           email: order.customer.email,
           firstName: order.customer.first_name,
@@ -231,7 +270,7 @@ async function handleOrderCreated(order: WebhookOrder) {
     // Log webhook event using existing Event model
     await prisma.event.create({
       data: {
-        tenantId: tenant.id,
+        tenantId,
         topic: 'orders/create',
         payload: JSON.parse(JSON.stringify(order)),
       }
@@ -267,24 +306,10 @@ async function handleOrderFulfilled(order: WebhookOrder) {
   // Handle shipping notifications, tracking updates, etc.
 }
 
-async function handleProductCreated(product: WebhookProduct) {
+async function handleProductCreated(product: WebhookProduct, tenantId: string, shopDomain: string) {
   console.log(`New product created: ${product.title}`);
   
   try {
-    // Find or create tenant
-    const shopDomain = 'webhook-store.myshopify.com';
-    let tenant = await prisma.tenant.findUnique({ where: { shopDomain } });
-    
-    if (!tenant) {
-      tenant = await prisma.tenant.create({
-        data: {
-          name: 'Webhook Store',
-          shopDomain: shopDomain,
-          accessToken: 'webhook-token'
-        }
-      });
-    }
-
     // Extract price from variants
     const variants = product.variants as Array<{ price?: string }> || [];
     const price = variants.length > 0 ? parseFloat(variants[0].price || '0') : 0;
@@ -293,7 +318,7 @@ async function handleProductCreated(product: WebhookProduct) {
     await prisma.product.upsert({
       where: { 
         tenantId_shopId: { 
-          tenantId: tenant.id, 
+          tenantId, 
           shopId: product.id 
         } 
       },
@@ -302,7 +327,7 @@ async function handleProductCreated(product: WebhookProduct) {
         price: price,
       },
       create: {
-        tenantId: tenant.id,
+        tenantId,
         shopId: product.id,
         title: product.title,
         price: price,
@@ -312,7 +337,7 @@ async function handleProductCreated(product: WebhookProduct) {
     // Log webhook event
     await prisma.event.create({
       data: {
-        tenantId: tenant.id,
+        tenantId,
         topic: 'products/create',
         payload: JSON.parse(JSON.stringify(product)),
       }
@@ -367,6 +392,47 @@ async function handleAppUninstalled(_data: Record<string, unknown>, shop: string
   // Handle cleanup, data removal, etc.
 }
 
+// Checkout/cart bonus handlers: log events for analytics and abandonment processing
+async function handleCheckoutCreated(checkout: WebhookCheckout, tenantId: string) {
+  await prisma.event.create({
+    data: {
+      tenantId,
+      topic: 'checkouts/create',
+      payload: JSON.parse(JSON.stringify(checkout)),
+    },
+  });
+}
+
+async function handleCheckoutUpdated(checkout: WebhookCheckout, tenantId: string) {
+  await prisma.event.create({
+    data: {
+      tenantId,
+      topic: 'checkouts/update',
+      payload: JSON.parse(JSON.stringify(checkout)),
+    },
+  });
+}
+
+async function handleCartCreated(cart: WebhookCart, tenantId: string) {
+  await prisma.event.create({
+    data: {
+      tenantId,
+      topic: 'carts/create',
+      payload: JSON.parse(JSON.stringify(cart)),
+    },
+  });
+}
+
+async function handleCartUpdated(cart: WebhookCart, tenantId: string) {
+  await prisma.event.create({
+    data: {
+      tenantId,
+      topic: 'carts/update',
+      payload: JSON.parse(JSON.stringify(cart)),
+    },
+  });
+}
+
 // GET endpoint for webhook verification during setup
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -390,6 +456,10 @@ export async function GET(request: NextRequest) {
       'customers/create',
       'customers/update',
       'inventory_levels/update',
+      'checkouts/create',
+      'checkouts/update',
+      'carts/create',
+      'carts/update',
       'app/uninstalled'
     ],
     timestamp: new Date().toISOString()

@@ -12,15 +12,24 @@ export function ensureSyncCron(): void {
 
   const intervalSec = Number(process.env.CRON_INTERVAL_SECONDS || 900); // default 15m
   const secret = process.env.CRON_SECRET || "";
-  const url = `${getBaseUrl()}/api/shopify/sync-all`;
+  const syncUrl = `${getBaseUrl()}/api/shopify/sync-all`;
+  const abandonUrl = `${getBaseUrl()}/api/shopify/abandonment/sweep`;
 
   async function tick() {
     try {
-      await fetch(url, {
+      await fetch(syncUrl, {
         method: "POST",
         headers: secret ? { "x-cron-key": secret } : {},
         cache: "no-store",
       });
+      // Trigger abandonment sweep a bit after sync
+      setTimeout(() => {
+        fetch(abandonUrl, {
+          method: "POST",
+          headers: secret ? { "x-cron-key": secret } : {},
+          cache: "no-store",
+        }).catch(() => {});
+      }, 3000);
     } catch {
       // ignore errors; best-effort cron
     }

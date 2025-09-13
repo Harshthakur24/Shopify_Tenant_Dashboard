@@ -14,7 +14,9 @@ import {
     PieChart,
     Activity,
     Filter,
-    Zap
+    Zap,
+    ShoppingBag,
+    ArrowRight
 } from "lucide-react";
 import { Bar, Line, Doughnut } from "react-chartjs-2";
 import {
@@ -34,6 +36,7 @@ import CountUp from "react-countup";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -407,6 +410,14 @@ export default function ShopifyDashboard() {
                         <h2 className="text-2xl font-bold text-foreground">Your Store Products</h2>
                         <p className="text-muted-foreground">Comprehensive view of your Products</p>
                     </div>
+
+                    {/* Shopify Integration Button */}
+                    <Link href="/shopify-integration" className="ml-10">
+                        <Button className="bg-green-500 py-7 px-5 text-white shadow-lg rounded-full hover:bg-green-600 hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105">
+                            <ShoppingBag className="w-4 h-4 mr-2" />
+                            Shopify Integration <ArrowRight className="w-4 h-4 group-hover:translate-x-1 items-center" />
+                        </Button>
+                    </Link>
                 </div>
 
 
