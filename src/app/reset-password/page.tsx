@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -232,10 +232,10 @@ export default function ResetPasswordPage() {
                                     required
                                     placeholder="••••••••"
                                     className={`w-full rounded-xl border-2 bg-white px-4 py-3.5 pr-12 text-sm placeholder:text-neutral-400 transition-all duration-300 focus:outline-none focus:ring-4 group-hover:border-violet-300 ${confirmPassword && password !== confirmPassword
-                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                            : confirmPassword && password === confirmPassword
-                                                ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
-                                                : 'border-neutral-200 focus:border-violet-500 focus:ring-violet-500/20'
+                                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                        : confirmPassword && password === confirmPassword
+                                            ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
+                                            : 'border-neutral-200 focus:border-violet-500 focus:ring-violet-500/20'
                                         }`}
                                 />
                                 <button
@@ -315,5 +315,24 @@ export default function ResetPasswordPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-violet-50 flex items-center justify-center p-4">
+                <div className="w-full max-w-md">
+                    <div className="bg-white/80 backdrop-blur-sm shadow-2xl rounded-3xl border border-white/20 p-8">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-600 mx-auto mb-4"></div>
+                            <p className="text-neutral-600">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }>
+            <ResetPasswordForm />
+        </Suspense>
     );
 }
