@@ -106,7 +106,7 @@ export default function Home() {
               Shopify Data Ingestion & Insights
             </span>
             <h1 className="mt-6 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] [text-wrap:balance]">
-              <span className="block">Transform Your <span className="text-green-600">Shopify</span></span>
+              <span className="block">Transform Your <span className="text-[#95BF47]">Shopify</span></span>
               <span className="block">Store with <span className="text-blue-600 bg-clip-text [animation:gradient_123_infinite_4s_ease-in-out_infinite]">
                 <TypeAnimation
                   sequence={[
@@ -308,7 +308,7 @@ export default function Home() {
                       preserveValue
                     />
                   ) : (
-                    <span>{stat.number.toLocaleString()}{stat.suffix}</span>
+                    <span>{stat.number.toLocaleString('en-US')}{stat.suffix}</span>
                   )}
                 </div>
                 <div className="text-gray-300 font-medium text-lg">{stat.label}</div>

@@ -21,6 +21,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@shopify/shopify-api": "^11.14.1",
     "@types/nodemailer": "^7.0.1",
     "@upstash/redis": "^1.35.3",
     "bcryptjs": "^2.4.3",

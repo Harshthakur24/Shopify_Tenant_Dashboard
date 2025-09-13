@@ -415,13 +415,22 @@ export default function ShopifyDashboard() {
                     {filtered.map((product) => (
                         <article key={product.id} className="group overflow-hidden rounded-2xl border border-blue-100/50 bg-white/80 shadow-lg transition duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-white/90">
                             <div className="relative h-64 w-full bg-neutral-100 overflow-hidden">
-                                <Image
-                                    src={product.image?.src || '/placeholder-image.jpg'}
-                                    alt={product.image?.alt || product.title}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    className="object-cover transition duration-300 group-hover:scale-105"
-                                />
+                                {product.image?.src ? (
+                                    <Image
+                                        src={product.image.src}
+                                        alt={product.image.alt || product.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        className="object-cover transition duration-300 group-hover:scale-105"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full bg-gradient-to-br from-neutral-100 to-neutral-200">
+                                        <div className="text-center">
+                                            <Package className="h-12 w-12 text-neutral-400 mx-auto mb-2" />
+                                            <p className="text-sm text-neutral-500">No Image</p>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/20 to-transparent p-4">
                                     <div className="flex items-center justify-between">
                                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-700'}`}>
