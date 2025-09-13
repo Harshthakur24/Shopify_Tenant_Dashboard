@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Create reset URL
-      const resetUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+      const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
 
       // Send password reset email
       try {
