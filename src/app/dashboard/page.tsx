@@ -38,6 +38,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { AreaChartStacked, BarChartMultiple, LineChartMultiple, PieChartLabel, RadarChartMultiple, RadialChartStacked } from "@/components/charts";
+import { transformPricesToBarChart, transformVendorsToLineChart, calculateTrend } from "@/lib/chart-utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Tooltip, Legend, Title, Filler);
 
@@ -396,26 +398,30 @@ export default function ShopifyDashboard() {
 
                 </motion.div>
 
+                <div className="flex items-center gap-3">
+                    <div className="bg-blue-500 p-2 rounded-lg">
+                        <Package className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-foreground">Your Store Products</h2>
+                        <p className="text-muted-foreground">Comprehensive view of your Products</p>
+                    </div>
+                </div>
+
 
 
                 {/* Products Grid - Original Style */}
                 <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {filtered.map((product) => (
                         <article key={product.id} className="group overflow-hidden rounded-2xl border border-blue-100/50 bg-white/80 shadow-lg transition duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-white/90">
-                            <div className="relative h-64 w-full bg-neutral-100">
-                                {product.image?.src ? (
-                                    <Image
-                                        src={product.image.src}
-                                        alt={product.image.alt || product.title}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        className="object-cover transition duration-300 group-hover:scale-105"
-                                    />
-                                ) : (
-                                    <div className="flex h-full w-full items-center justify-center text-neutral-400">
-                                        <Package className="h-8 w-8" />
-                                    </div>
-                                )}
+                            <div className="relative h-64 w-full bg-neutral-100 overflow-hidden">
+                                <Image
+                                    src={product.image?.src || '/placeholder-image.jpg'}
+                                    alt={product.image?.alt || product.title}
+                                    fill
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                    className="object-cover transition duration-300 group-hover:scale-105"
+                                />
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/20 to-transparent p-4">
                                     <div className="flex items-center justify-between">
                                         <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-700'}`}>
@@ -481,7 +487,7 @@ export default function ShopifyDashboard() {
 
                                 <div className="mt-4 rounded-lg border border-neutral-200/50 bg-white/50">
                                     {(variantsExpanded[String(product.id)] ? (product.variants || []) : (product.variants || []).slice(0, 1)).map((variant, idx, arr) => (
-                                        <div key={variant.id} className={`flex items-center justify-between px-3 py-2 ${idx === 0 ? 'first:rounded-t-lg' : ''} ${idx === arr.length - 1 && (!variantsExpanded[String(product.id)] || (product.variants || []).length === arr.length) ? 'last:rounded-b-lg last:border-0' : ''} border-b border-neutral-200`}>
+                                        <div key={`${product.id}-variant-${idx}-${variant.id}`} className={`flex items-center justify-between px-3 py-2 ${idx === 0 ? 'first:rounded-t-lg' : ''} ${idx === arr.length - 1 && (!variantsExpanded[String(product.id)] || (product.variants || []).length === arr.length) ? 'last:rounded-b-lg last:border-0' : ''} border-b border-neutral-200`}>
                                             <span className="text-sm text-neutral-700">{variant.title}</span>
                                             <span className="text-sm font-semibold text-blue-600">₹{Number(variant.price).toLocaleString()}</span>
                                         </div>
@@ -1014,6 +1020,180 @@ export default function ShopifyDashboard() {
                                         </div>
                                     </Card>
                                 </div>
+                            </div>
+
+                            {/* New Enhanced Charts Section */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-2 rounded-lg">
+                                        <Activity className="h-6 w-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-foreground">Advanced Analytics</h2>
+                                        <p className="text-muted-foreground">Enhanced insights with modern chart components</p>
+                                    </div>
+                                </div>
+
+                                {/* Transform data for the new charts */}
+                                {(() => {
+
+                                    const barData = transformPricesToBarChart(products);
+                                    const lineData = transformVendorsToLineChart(products);
+                                    const barTrend = calculateTrend(barData);
+                                    const lineTrend = calculateTrend(lineData);
+
+                                    return (
+                                        <div className="space-y-6">
+                                            {/* Row 1: Area Chart with Hardcoded Data */}
+                                            <div className="grid grid-cols-1 gap-6">
+                                                <AreaChartStacked
+                                                    data={[
+                                                        { period: "January", desktop: 186, mobile: 80 },
+                                                        { period: "February", desktop: 305, mobile: 200 },
+                                                        { period: "March", desktop: 237, mobile: 120 },
+                                                        { period: "April", desktop: 73, mobile: 190 },
+                                                        { period: "May", desktop: 209, mobile: 130 },
+                                                        { period: "June", desktop: 214, mobile: 140 },
+                                                    ]}
+                                                    title="Product Creation Trends"
+                                                    description="Total vs Active products created over time"
+                                                    trend={{ value: 5.2, period: "month" }}
+                                                    config={{
+                                                        desktop: {
+                                                            label: "Total Products",
+                                                            color: "#8B5CF6", // purple-500
+                                                        },
+                                                        mobile: {
+                                                            label: "Active Products",
+                                                            color: "#3B82F6", // blue-500
+                                                        },
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Row 2: New Charts - Pie, Radar, Radial */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                                <PieChartLabel
+                                                    data={[
+                                                        { category: "Electronics", value: 275, fill: "#8B5CF6" }, // purple-500
+                                                        { category: "Clothing", value: 200, fill: "#3B82F6" }, // blue-500
+                                                        { category: "Books", value: 187, fill: "#A855F7" }, // purple-600
+                                                        { category: "Home", value: 173, fill: "#1D4ED8" }, // blue-700
+                                                        { category: "Other", value: 90, fill: "#C084FC" }, // purple-400
+                                                    ]}
+                                                    title="Product Categories"
+                                                    description="Distribution by category"
+                                                    trend={{ value: 3.1, period: "month" }}
+                                                    config={{
+                                                        value: {
+                                                            label: "Products",
+                                                        },
+                                                        electronics: {
+                                                            label: "Electronics",
+                                                            color: "#8B5CF6",
+                                                        },
+                                                        clothing: {
+                                                            label: "Clothing",
+                                                            color: "#3B82F6",
+                                                        },
+                                                        books: {
+                                                            label: "Books",
+                                                            color: "#A855F7",
+                                                        },
+                                                        home: {
+                                                            label: "Home",
+                                                            color: "#1D4ED8",
+                                                        },
+                                                        other: {
+                                                            label: "Other",
+                                                            color: "#C084FC",
+                                                        },
+                                                    }}
+                                                />
+
+                                                <RadarChartMultiple
+                                                    data={[
+                                                        { category: "Quality", desktop: 186, mobile: 180 },
+                                                        { category: "Price", desktop: 305, mobile: 200 },
+                                                        { category: "Support", desktop: 237, mobile: 120 },
+                                                        { category: "Features", desktop: 173, mobile: 190 },
+                                                        { category: "Usability", desktop: 209, mobile: 130 },
+                                                        { category: "Design", desktop: 214, mobile: 140 },
+                                                    ]}
+                                                    title="Performance Metrics"
+                                                    description="Multi-dimensional analysis"
+                                                    trend={{ value: 2.8, period: "quarter" }}
+                                                    config={{
+                                                        desktop: {
+                                                            label: "Desktop Performance",
+                                                            color: "#8B5CF6", // purple-500
+                                                        },
+                                                        mobile: {
+                                                            label: "Mobile Performance",
+                                                            color: "#3B82F6", // blue-500
+                                                        },
+                                                    }}
+                                                />
+
+                                                <RadialChartStacked
+                                                    data={[
+                                                        { period: "current", desktop: 1260, mobile: 570 }
+                                                    ]}
+                                                    title="Current Performance"
+                                                    description="Desktop vs Mobile usage"
+                                                    trend={{ value: 4.5, period: "month" }}
+                                                    config={{
+                                                        desktop: {
+                                                            label: "Desktop Users",
+                                                            color: "#7C3AED", // purple-600
+                                                        },
+                                                        mobile: {
+                                                            label: "Mobile Users",
+                                                            color: "#2563EB", // blue-600
+                                                        },
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Row 3: Bar and Line Charts */}
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                                <BarChartMultiple
+                                                    data={barData}
+                                                    title="Price Range Distribution"
+                                                    description="Product availability across price ranges"
+                                                    trend={{ value: barTrend, period: "month" }}
+                                                    config={{
+                                                        desktop: {
+                                                            label: "Total Variants",
+                                                            color: "#A855F7", // purple-600
+                                                        },
+                                                        mobile: {
+                                                            label: "In Stock",
+                                                            color: "#1D4ED8", // blue-700
+                                                        },
+                                                    }}
+                                                />
+
+                                                <LineChartMultiple
+                                                    data={lineData}
+                                                    title="Top Vendor Performance"
+                                                    description="Product launches by leading vendors"
+                                                    trend={{ value: lineTrend, period: "month" }}
+                                                    config={{
+                                                        desktop: {
+                                                            label: lineData.length > 0 ? "Top Vendor" : "Vendor A",
+                                                            color: "#C084FC", // purple-400
+                                                        },
+                                                        mobile: {
+                                                            label: lineData.length > 0 ? "Second Vendor" : "Vendor B",
+                                                            color: "#2563EB", // blue-600
+                                                        },
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                         </TabsContent>

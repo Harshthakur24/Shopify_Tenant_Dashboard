@@ -14,7 +14,12 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
+    // Add a small delay to ensure DOM is fully ready
+    const timer = setTimeout(() => {
+      setIsMounted(true);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const heroImage = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80";
@@ -101,7 +106,7 @@ export default function Home() {
               Shopify Data Ingestion & Insights
             </span>
             <h1 className="mt-6 text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] [text-wrap:balance]">
-              <span className="block">Transform Your <span className="text-blue-600">Shopify</span></span>
+              <span className="block">Transform Your <span className="text-green-600">Shopify</span></span>
               <span className="block">Store with <span className="text-blue-600 bg-clip-text [animation:gradient_123_infinite_4s_ease-in-out_infinite]">
                 <TypeAnimation
                   sequence={[
@@ -299,8 +304,8 @@ export default function Home() {
                       end={stat.number}
                       duration={2.5}
                       suffix={stat.suffix}
-                      enableScrollSpy
                       separator=","
+                      preserveValue
                     />
                   ) : (
                     <span>{stat.number.toLocaleString()}{stat.suffix}</span>
@@ -623,7 +628,7 @@ function AutoHideNavbar() {
           <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/90 backdrop-blur-xl px-6 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg">
-                <span className="text-lg font-bold">P</span>
+                <span className="text-lg font-bold">S</span>
               </div>
               <div>
                 <h2 className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-lg font-bold tracking-tight text-transparent">Producti</h2>
