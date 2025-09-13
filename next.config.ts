@@ -14,9 +14,8 @@ const nextConfig: NextConfig = {
     ],
   },
   outputFileTracingRoot: __dirname,
-  experimental: {
-    serverComponentsExternalPackages: ["@prisma/client", "prisma"],
-  },
+  // next@15: use serverExternalPackages (replaces experimental.serverComponentsExternalPackages)
+  serverExternalPackages: ["@prisma/client", "prisma"],
   // Skip linting and type checking during build for faster deployments
   eslint: {
     ignoreDuringBuilds: true,
