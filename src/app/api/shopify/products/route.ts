@@ -83,20 +83,20 @@ export async function GET(request: NextRequest) {
         take: 1000,
       });
 
-      const products = db.map((p: any) => ({ // eslint-disable-line @typescript-eslint/no-explicit-any
+      const products = db.map((p: Record<string, unknown>) => ({
         id: p.shopId,
         title: p.title,
         // Minimal shape used by the dashboard
-        variants: [{ price: p.price.toString() }],
+        variants: [{ price: (p.price as number).toString() }],
         status: "active",
         vendor: "Unknown",
         product_type: "General",
-        handle: (p.title || "").toLowerCase().replace(/\s+/g, "-"),
+        handle: ((p.title as string) || "").toLowerCase().replace(/\s+/g, "-"),
         body_html: "",
         image: null,
         images: [],
         options: [],
-        created_at: p.createdAt.toISOString(),
+        created_at: (p.createdAt as Date).toISOString(),
       }));
 
       return { products };
