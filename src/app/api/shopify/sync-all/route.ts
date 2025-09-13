@@ -8,6 +8,29 @@ type ShopifyOrder = { id: number | string; total_price?: string | number | null;
 
 export const dynamic = "force-dynamic";
 
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function getTenantsWithRetry(maxAttempts = 4, baseDelayMs = 800) {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await prisma.tenant.findMany({});
+    } catch (err) {
+      const code = (err as { code?: string }).code;
+      attempt += 1;
+      if (code === "P1001" && attempt < maxAttempts) {
+        const delay = baseDelayMs * attempt;
+        console.error(`DB unreachable (P1001). Retry ${attempt}/${maxAttempts - 1} in ${delay}ms`);
+        await sleep(delay);
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 async function fetchAllBySinceId<T extends { id: number | string }>(baseUrl: string, headers: Record<string, string>, resourcePath: string): Promise<T[]> {
   const results: T[] = [];
   let sinceId = 0;
@@ -37,7 +60,26 @@ export async function POST(request: NextRequest) {
   const locked = await tryLock(lockKey, 60 * 10); // 10 minutes lock
   if (!locked) return NextResponse.json({ error: "already running" }, { status: 429 });
 
-  const tenants = await prisma.tenant.findMany({});
+  // Ensure DB configuration exists
+  if (!process.env.DATABASE_URL) {
+    await unlock(lockKey);
+    return NextResponse.json({ error: "database not configured" }, { status: 500 });
+  }
+
+  let tenants;
+  try {
+    tenants = await getTenantsWithRetry(4, 800);
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    const msg = String(err);
+    if (code === "P1001") {
+      await unlock(lockKey);
+      return NextResponse.json({ error: "database unreachable", code }, { status: 503, headers: { "Retry-After": "30" } });
+    }
+    await unlock(lockKey);
+    return NextResponse.json({ error: "failed to load tenants", details: msg }, { status: 500 });
+  }
+
   const results: Array<{ tenantId: string; ok: boolean; msg: string }> = [];
 
   try {
