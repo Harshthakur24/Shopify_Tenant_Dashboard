@@ -13,10 +13,11 @@ import {
     BarChart3,
     PieChart,
     Activity,
-    Filter,
     Zap,
     ShoppingBag,
-    ArrowRight
+    ArrowRight,
+    Calendar,
+    X
 } from "lucide-react";
 import { Bar, Line, Doughnut } from "react-chartjs-2";
 import {
@@ -86,9 +87,14 @@ export default function ShopifyDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState("");
-    const [category, setCategory] = useState<string>("all");
+    const [category, setCategory] = useState<string>("");
     const [sort, setSort] = useState<string>("recent");
     const [fallbackToast, setFallbackToast] = useState<string | null>(null);
+    const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+        start: "",
+        end: ""
+    });
+    const [showDateFilter, setShowDateFilter] = useState(false);
     const [descExpanded, setDescExpanded] = useState<Record<string, boolean>>({});
     const [colorsVisible, setColorsVisible] = useState<Record<string, boolean>>({});
     const [variantsExpanded, setVariantsExpanded] = useState<Record<string, boolean>>({});
@@ -97,7 +103,11 @@ export default function ShopifyDashboard() {
     useEffect(() => {
         const fetchProducts = async (): Promise<void> => {
             try {
-                const res = await fetch('/api/shopify/products');
+                const url = new URL('/api/shopify/products', window.location.origin);
+                if (dateRange.start) url.searchParams.set('startDate', dateRange.start);
+                if (dateRange.end) url.searchParams.set('endDate', dateRange.end);
+
+                const res = await fetch(url.toString());
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
                 setProducts(Array.isArray(json?.products) ? json.products : []);
@@ -130,7 +140,7 @@ export default function ShopifyDashboard() {
             clearTimeout(timeout1);
             clearTimeout(timeout2);
         };
-    }, []);
+    }, [dateRange.start, dateRange.end]);
 
     // Navbar logic removed
 
@@ -244,7 +254,7 @@ export default function ShopifyDashboard() {
 
     const filtered = products
         .filter(p => p.title.toLowerCase().includes(search.toLowerCase()))
-        .filter(p => category === "all" ? true : (p.product_type || "Uncategorized") === category)
+        .filter(p => category === "" ? true : (p.product_type || "Uncategorized") === category)
         .sort((a, b) => {
             if (sort === "price-asc") return Number(a.variants?.[0]?.price || 0) - Number(b.variants?.[0]?.price || 0);
             if (sort === "price-desc") return Number(b.variants?.[0]?.price || 0) - Number(a.variants?.[0]?.price || 0);
@@ -306,7 +316,7 @@ export default function ShopifyDashboard() {
                                             onChange={(e) => setCategory(e.target.value)}
                                             className="rounded-lg bg-white/20 border border-white/30 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30"
                                         >
-                                            <option value="all" className="text-gray-900">All Categories</option>
+                                            <option value="" className="text-gray-900">Select Category</option>
                                             {categories.map((c) => (
                                                 <option key={c} value={c} className="text-gray-900">{c}</option>
                                             ))}
@@ -320,9 +330,14 @@ export default function ShopifyDashboard() {
                                             <option value="price-asc" className="text-gray-900">Price: Low to High</option>
                                             <option value="price-desc" className="text-gray-900">Price: High to Low</option>
                                         </select>
-                                        <Button variant="secondary" size="sm" className="bg-white/20 hover:bg-white/30 text-white border-white/30">
-                                            <Filter className="h-4 w-4 mr-2" />
-                                            Filters
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+                                            onClick={() => setShowDateFilter(!showDateFilter)}
+                                        >
+                                            <Calendar className="h-4 w-4 mr-2" />
+                                            Date Range
                                         </Button>
                                     </div>
                                 </div>
@@ -419,6 +434,78 @@ export default function ShopifyDashboard() {
                     </Card>
 
                 </motion.div>
+
+                {/* Date Range Filter */}
+                {showDateFilter && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm"
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-gray-900">Date Range Filter</h3>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setShowDateFilter(false);
+                                    setDateRange({ start: '', end: '' });
+                                }}
+                                className="text-gray-500 hover:text-gray-700"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Start Date
+                                </label>
+                                <input
+                                    type="date"
+                                    value={dateRange.start}
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    End Date
+                                </label>
+                                <input
+                                    type="date"
+                                    value={dateRange.end}
+                                    onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                            <div className="flex items-end">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setDateRange({ start: "", end: "" })}
+                                    className="text-gray-600 hover:text-gray-800"
+                                >
+                                    Clear
+                                </Button>
+                            </div>
+                        </div>
+                        {(dateRange.start || dateRange.end) && (
+                            <div className="mt-3 flex items-center gap-2 text-sm text-blue-600">
+                                <Calendar className="h-4 w-4" />
+                                <span>
+                                    {dateRange.start && dateRange.end
+                                        ? `Filtering products from ${dateRange.start} to ${dateRange.end}`
+                                        : dateRange.start
+                                            ? `Showing products from ${dateRange.start} onwards`
+                                            : `Showing products up to ${dateRange.end}`
+                                    }
+                                </span>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
 
                 <div className="flex items-center gap-3">
                     <div className="bg-blue-500 p-2 rounded-lg">
@@ -575,7 +662,11 @@ export default function ShopifyDashboard() {
                                     Try adjusting your search criteria or filters to find products
                                 </CardDescription>
                             </div>
-                            <Button variant="outline" onClick={() => { setSearch(''); setCategory('all'); }}>
+                            <Button variant="outline" onClick={() => {
+                                setSearch('');
+                                setCategory('');
+                                setDateRange({ start: '', end: '' });
+                            }}>
                                 Clear Filters
                             </Button>
                         </CardContent>

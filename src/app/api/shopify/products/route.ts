@@ -37,6 +37,8 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const queryTenantId = params.get("tenantId") || undefined;
   const queryShop = params.get("shop") || undefined;
+  const startDate = params.get("startDate") || undefined;
+  const endDate = params.get("endDate") || undefined;
 
   let shopDomain = process.env.SHOPIFY_SHOP_DOMAIN || "xeno-assignjjment-store.myshopify.com";
   let accessToken: string | undefined = process.env.SHOPIFY_ACCESS_TOKEN || undefined;
@@ -66,7 +68,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "No access token available" }, { status: 401 });
   }
 
-  const cacheKey = `products:${shopDomain}`;
+  const dateFilter = startDate || endDate ? `:${startDate || 'all'}:${endDate || 'all'}` : '';
+  const cacheKey = `products:${shopDomain}${dateFilter}`;
   const lockKey = `lock:${cacheKey}`;
 
   try {
@@ -82,7 +85,11 @@ export async function GET(request: NextRequest) {
         if (lockAcquired) {
           try {
             console.log(`🔄 Background refresh: fetching fresh data for ${shopDomain}`);
-            const res = await fetch(`https://${shopDomain}/admin/api/2025-07/products.json`, {
+            const apiUrl = new URL(`https://${shopDomain}/admin/api/2025-07/products.json`);
+            if (startDate) apiUrl.searchParams.set('created_at_min', startDate);
+            if (endDate) apiUrl.searchParams.set('created_at_max', endDate);
+            
+            const res = await fetch(apiUrl.toString(), {
               headers: { "X-Shopify-Access-Token": accessToken },
               cache: "no-store",
             });
@@ -182,10 +189,14 @@ export async function GET(request: NextRequest) {
 
     // Cache miss - fetch from Shopify API immediately
     console.log(`🔄 Cache miss - fetching fresh data from Shopify for ${shopDomain}`);
-          const res = await fetch(`https://${shopDomain}/admin/api/2025-07/products.json`, {
+    const apiUrl = new URL(`https://${shopDomain}/admin/api/2025-07/products.json`);
+    if (startDate) apiUrl.searchParams.set('created_at_min', startDate);
+    if (endDate) apiUrl.searchParams.set('created_at_max', endDate);
+    
+    const res = await fetch(apiUrl.toString(), {
       headers: { "X-Shopify-Access-Token": accessToken },
-            cache: "no-store",
-          });
+      cache: "no-store",
+    });
 
     if (!res.ok) {
       return NextResponse.json({ error: `Shopify API error: ${res.statusText}` }, { status: res.status });
@@ -286,9 +297,22 @@ export async function GET(request: NextRequest) {
     if (tenantId) {
       try {
         console.log("🔄 Attempting database fallback...");
+        
+        // Build date filter for database query
+        const dateFilter: { gte?: Date; lte?: Date } = {};
+        if (startDate) {
+          dateFilter.gte = new Date(startDate);
+        }
+        if (endDate) {
+          dateFilter.lte = new Date(endDate);
+        }
+        
         const dbProducts = await withDbRetry(() => 
           prisma.product.findMany({
-            where: { tenantId },
+            where: { 
+              tenantId,
+              ...(Object.keys(dateFilter).length > 0 && { shopCreatedAt: dateFilter })
+            },
             select: {
               shopId: true,
               title: true,
