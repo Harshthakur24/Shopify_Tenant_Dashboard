@@ -6,6 +6,7 @@ A comprehensive Shopify analytics and integration platform built with Next.js, f
 
 - **Multi-tenant Shopify Integration**: Support for multiple Shopify stores with secure tenant isolation
 - **Real-time Data Sync**: Automated synchronization of products, orders, and customers via API and webhooks
+- **Interactive Dashboard**: Dual-state navigation with products/customers/orders switching and overview analytics
 - **Analytics Dashboard**: Rich data visualization with charts and insights
 - **Authentication System**: Secure user authentication with JWT and password reset functionality
 - **Email Integration**: Automated email notifications using Nodemailer
@@ -171,6 +172,33 @@ pnpm start
 
 The application will be available at `http://localhost:3000`
 
+## 📊 Dashboard Usage
+
+### Navigation Overview
+
+The dashboard features a dual-state navigation system:
+
+#### Top Navigation Buttons
+- **Your Products** (Orange): Displays product grid and management interface
+- **Your Customers** (Blue): Shows customer list and analytics
+- **Your Orders** (Purple): Displays order management and tracking
+- **Shopify Integration** (Green): Links to Shopify setup and configuration
+
+#### Bottom Tab Navigation
+- **Overview**: Analytics dashboard with charts and graphs (default)
+- **Performance**: Performance metrics and KPIs
+- **Vendors**: Vendor management and analytics
+
+### Default View
+- **Products Content**: Shows by default when page loads
+- **Overview Analytics**: Charts and graphs display simultaneously
+- **Independent Control**: Top buttons and bottom tabs work independently
+
+### Data Refresh
+- Products data refreshes automatically every 3.5 seconds after sync operations
+- Real-time updates via webhooks for immediate data changes
+- Manual refresh available through sync buttons
+
 ## 📚 API Endpoints
 
 ### Authentication APIs
@@ -187,6 +215,8 @@ The application will be available at `http://localhost:3000`
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/shopify/products` | Fetch products with analytics |
+| GET | `/api/shopify/customers` | Fetch customers data |
+| GET | `/api/shopify/orders` | Fetch orders data |
 | POST | `/api/shopify/sync` | Manual data synchronization |
 | POST | `/api/shopify/sync-all` | Sync all tenants (cron job) |
 | GET/POST | `/api/shopify/webhooks` | Webhook endpoint for Shopify events |
@@ -330,6 +360,14 @@ CREATE TABLE "Event" (
 
 ## 🎯 Key Features Detail
 
+### Interactive Dashboard
+- **Dual-State Navigation**: Independent control of content sections and analytics tabs
+- **Product Management**: View and manage Shopify products with real-time data
+- **Customer Analytics**: Customer insights and relationship management
+- **Order Tracking**: Order management and fulfillment tracking
+- **Overview Analytics**: Charts, graphs, and performance metrics
+- **Responsive Design**: Optimized for desktop and mobile viewing
+
 ### Multi-Tenant Architecture
 - Complete data isolation between tenants
 - Shared application infrastructure
@@ -339,6 +377,7 @@ CREATE TABLE "Event" (
 - **API Sync**: Manual and automated data fetching
 - **Webhooks**: Real-time event processing
 - **Background Jobs**: Periodic data updates (15-minute intervals)
+- **Data Refresh**: Automatic data updates every 3.5 seconds after sync operations
 
 ### Analytics Capabilities
 - Revenue trends and forecasting
