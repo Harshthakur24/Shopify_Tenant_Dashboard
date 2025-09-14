@@ -162,6 +162,10 @@ export async function POST(request: NextRequest) {
         await handleProductUpdated(data);
         break;
       
+      case 'products/delete':
+        await handleProductDeleted(data, tenant.id, shop);
+        break;
+      
       case 'customers/create':
         await handleCustomerCreated(data);
         break;
@@ -358,6 +362,46 @@ async function handleProductUpdated(product: WebhookProduct) {
   // Handle product changes, price updates, inventory changes, etc.
 }
 
+async function handleProductDeleted(product: WebhookProduct, tenantId: string, shopDomain: string) {
+  console.log(`Product deleted: ${product.title} (ID: ${product.id})`);
+  
+  try {
+    // Delete the product from database
+    const deletedProduct = await prisma.product.delete({
+      where: { 
+        tenantId_shopId: { 
+          tenantId, 
+          shopId: product.id 
+        } 
+      }
+    });
+
+    console.log(`✅ Deleted product from database: ${deletedProduct.title}`);
+
+    // Log webhook event
+    await prisma.event.create({
+      data: {
+        tenantId,
+        topic: 'products/delete',
+        payload: JSON.parse(JSON.stringify(product)),
+      }
+    });
+
+    // Clear cache to refresh dashboard data
+    await cacheDel(`products:${shopDomain}`);
+    
+    console.log(`✅ Product deletion webhook processed: ${product.title}`);
+    
+  } catch (error) {
+    console.error('❌ Error processing product deletion webhook:', error);
+    // Don't throw - product might not exist in our database yet
+    if (error instanceof Error && !error.message.includes('Record to delete does not exist')) {
+      throw error;
+    }
+    console.log(`ℹ️ Product ${product.id} not found in database - may have been deleted already`);
+  }
+}
+
 async function handleCustomerCreated(customer: WebhookCustomer) {
   console.log(`New customer: ${customer.email}`);
   
@@ -453,6 +497,7 @@ export async function GET(request: NextRequest) {
       'orders/fulfilled',
       'products/create',
       'products/update',
+      'products/delete',
       'customers/create',
       'customers/update',
       'inventory_levels/update',
