@@ -45,6 +45,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AreaChartStacked, BarChartMultiple, LineChartMultiple, PieChartLabel, RadarChartMultiple, RadialChartStacked } from "@/components/charts";
 import { transformPricesToBarChart, transformVendorsToLineChart, calculateTrend } from "@/lib/chart-utils";
 import { WebhookActivity } from "@/components/webhook-activity";
+import CustomersList from "@/components/customers-list";
+import OrdersList from "@/components/orders-list";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Tooltip, Legend, Title, Filler);
 
@@ -98,7 +100,13 @@ export default function ShopifyDashboard() {
     const [descExpanded, setDescExpanded] = useState<Record<string, boolean>>({});
     const [colorsVisible, setColorsVisible] = useState<Record<string, boolean>>({});
     const [variantsExpanded, setVariantsExpanded] = useState<Record<string, boolean>>({});
+    const [activeTab, setActiveTab] = useState("overview");
     // Navbar removed per request
+
+    // Ensure overview tab is always the default
+    useEffect(() => {
+        setActiveTab("overview");
+    }, []);
 
     useEffect(() => {
         const fetchProducts = async (): Promise<void> => {
@@ -516,13 +524,37 @@ export default function ShopifyDashboard() {
                         <p className="text-muted-foreground">Comprehensive view of your Products</p>
                     </div>
 
-                    {/* Shopify Integration Button */}
-                    <Link href="/shopify-integration" className="ml-10">
-                        <Button className="bg-green-500 py-7 px-5 text-white shadow-lg rounded-full hover:bg-green-600 hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105">
-                            <ShoppingBag className="w-4 h-4 mr-2" />
-                            Shopify Integration <ArrowRight className="w-4 h-4 group-hover:translate-x-1 items-center" />
+                    {/* Navigation Buttons */}
+                    <div className="flex items-center gap-3 ml-10">
+                        <Link href="/shopify-integration">
+                            <Button className="bg-green-500 py-7 px-5 text-white shadow-lg rounded-full hover:bg-green-600 hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                <ShoppingBag className="w-4 h-4 mr-2" />
+                                Shopify Integration <ArrowRight className="w-4 h-4 group-hover:translate-x-1 items-center" />
+                            </Button>
+                        </Link>
+
+                        <Button
+                            onClick={() => setActiveTab("customers")}
+                            className={`py-7 px-5 text-white shadow-lg rounded-full hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 ${activeTab === "customers"
+                                ? "bg-blue-600 ring-2 ring-blue-300"
+                                : "bg-blue-500 hover:bg-blue-600"
+                                }`}
+                        >
+                            <Users className="w-4 h-4 mr-2" />
+                            View Customers {activeTab === "customers" && "✓"}
                         </Button>
-                    </Link>
+
+                        <Button
+                            onClick={() => setActiveTab("orders")}
+                            className={`py-7 px-5 text-white shadow-lg rounded-full hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 ${activeTab === "orders"
+                                ? "bg-purple-600 ring-2 ring-purple-300"
+                                : "bg-purple-500 hover:bg-purple-600"
+                                }`}
+                        >
+                            <Package className="w-4 h-4 mr-2" />
+                            View Orders {activeTab === "orders" && "✓"}
+                        </Button>
+                    </div>
                 </div>
 
 
@@ -673,15 +705,64 @@ export default function ShopifyDashboard() {
                     </Card>
                 )}
 
+                {/* Quick Navigation Section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                >
+                    <Card className="bg-gradient-to-r from-slate-50 to-blue-50 border-blue-200">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Quick Navigation</h3>
+                                    <p className="text-sm text-gray-600">Jump directly to your customers and orders data</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <Button
+                                        onClick={() => {
+                                            console.log('Quick nav customers clicked');
+                                            setActiveTab("customers");
+                                        }}
+                                        variant="outline"
+                                        className={`${activeTab === "customers"
+                                            ? "bg-blue-50 border-blue-400 text-blue-700"
+                                            : "bg-white hover:bg-blue-50 border-blue-200 hover:border-blue-300"
+                                            }`}
+                                    >
+                                        <Users className="w-4 h-4 mr-2" />
+                                        Customers {activeTab === "customers" && "✓"}
+                                    </Button>
+                                    <Button
+                                        onClick={() => setActiveTab("orders")}
+                                        variant="outline"
+                                        className={`${activeTab === "orders"
+                                            ? "bg-purple-50 border-purple-400 text-purple-700"
+                                            : "bg-white hover:bg-purple-50 border-purple-200 hover:border-purple-300"
+                                            }`}
+                                    >
+                                        <Package className="w-4 h-4 mr-2" />
+                                        Orders {activeTab === "orders" && "✓"}
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
                 {/* Analytics Tabs Section */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
                 >
-                    <Tabs defaultValue="overview" className="space-y-6">
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={setActiveTab}
+                        className="space-y-6"
+                    >
                         <div className="flex items-center justify-between">
-                            <TabsList className="grid w-full max-w-md grid-cols-4">
+                            <TabsList className="grid w-full max-w-2xl grid-cols-6">
                                 <TabsTrigger value="overview" className="flex items-center gap-2">
                                     <BarChart3 className="h-4 w-4" />
                                     Overview
@@ -697,6 +778,14 @@ export default function ShopifyDashboard() {
                                 <TabsTrigger value="vendors" className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
                                     Vendors
+                                </TabsTrigger>
+                                <TabsTrigger value="customers" className="flex items-center gap-2">
+                                    <Users className="h-4 w-4" />
+                                    Customers
+                                </TabsTrigger>
+                                <TabsTrigger value="orders" className="flex items-center gap-2">
+                                    <ShoppingBag className="h-4 w-4" />
+                                    Orders
                                 </TabsTrigger>
                             </TabsList>
                         </div>
@@ -1463,6 +1552,26 @@ export default function ShopifyDashboard() {
                                         </div>
                                     </CardContent>
                                 </Card>
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="customers" className="space-y-6">
+                            <div>
+                                <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <h3 className="text-lg font-semibold text-blue-900">✅ Customers Tab Active</h3>
+                                    <p className="text-blue-700">Current tab: {activeTab} | Loading customers data...</p>
+                                </div>
+                                <CustomersList />
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="orders" className="space-y-6">
+                            <div>
+                                <div className="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                                    <h3 className="text-lg font-semibold text-purple-900">✅ Orders Tab Active</h3>
+                                    <p className="text-purple-700">Current tab: {activeTab} | Loading orders data...</p>
+                                </div>
+                                <OrdersList />
                             </div>
                         </TabsContent>
                     </Tabs>

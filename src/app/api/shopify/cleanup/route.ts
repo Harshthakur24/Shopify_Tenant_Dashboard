@@ -5,13 +5,13 @@ import { cacheDel } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
-// Helper function to clean up orphaned products
+
 async function cleanupOrphanedProducts(tenantId?: string, shopDomain?: string) {
   try {
     let shopDomainToUse = shopDomain || process.env.SHOPIFY_SHOP_DOMAIN || "xeno-assignment-store.myshopify.com";
     let accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
 
-    // Get tenant info if tenantId provided
+ 
     if (tenantId) {
       const tenant = await prisma.tenant.findUnique({ 
         where: { id: tenantId },
