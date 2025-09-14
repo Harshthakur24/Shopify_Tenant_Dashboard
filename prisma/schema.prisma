@@ -45,14 +45,40 @@ model PasswordResetToken {
 }
 
 model Product {
-    id        String   @id @default(cuid())
-    tenantId  String
-    tenant    Tenant   @relation(fields: [tenantId], references: [id])
-    shopId    String // Shopify product id
-    title     String
-    price     Decimal  @db.Decimal(10, 2)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id                String    @id @default(cuid())
+    tenantId          String
+    tenant            Tenant    @relation(fields: [tenantId], references: [id])
+    shopId            String // Shopify product id
+    title             String
+    price             Decimal   @db.Decimal(10, 2)
+    handle            String?
+    bodyHtml          String?   @db.Text // Long text for descriptions
+    vendor            String?
+    productType       String?
+    status            String?
+    tags              String?
+    publishedAt       DateTime?
+    publishedScope    String?
+    templateSuffix    String?
+    adminGraphqlApiId String?
+
+    // Main product image
+    imageUrl    String? // Main product image URL
+    imageAlt    String? // Main product image alt text
+    imageId     String? // Shopify image ID
+    imageWidth  Int?
+    imageHeight Int?
+
+    // JSON data for complex structures
+    imagesData   Json? // Store all images as JSON array
+    variantsData Json? // Store all variants as JSON array
+    optionsData  Json? // Store all options as JSON array
+
+    // Timestamps
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    shopCreatedAt DateTime?
+    shopUpdatedAt DateTime?
 
     @@unique([tenantId, shopId])
 }
