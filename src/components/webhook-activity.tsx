@@ -23,6 +23,32 @@ export function WebhookActivity() {
     const [stats, setStats] = useState<WebhookStats>({});
     const [loading, setLoading] = useState(true);
 
+    const fetchWebhookEvents = async () => {
+        try {
+            const response = await fetch('/api/webhooks/events?limit=10');
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            if (data && typeof data === 'object') {
+                setEvents(Array.isArray(data.events) ? data.events : []);
+                setStats(data.stats && typeof data.stats === 'object' ? data.stats : {});
+            } else {
+                setEvents([]);
+                setStats({});
+            }
+        } catch (error) {
+            console.error('Error fetching webhook events:', error);
+            setEvents([]);
+            setStats({});
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchWebhookEvents();
 
@@ -30,22 +56,6 @@ export function WebhookActivity() {
         const interval = setInterval(fetchWebhookEvents, 30000);
         return () => clearInterval(interval);
     }, []);
-
-    const fetchWebhookEvents = async () => {
-        try {
-            const response = await fetch('/api/webhooks/events?limit=10');
-            const data = await response.json();
-
-            if (response.ok) {
-                setEvents(data.events || []);
-                setStats(data.stats || {});
-            }
-        } catch (error) {
-            console.error('Error fetching webhook events:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const formatTopic = (topic: string) => {
         return topic.split('/').map(part =>
