@@ -111,7 +111,25 @@ export default function ShopifyDashboard() {
                 setLoading(false);
             }
         };
+
+        // Initial fetch
         fetchProducts();
+
+        // Refetch after 1.5 seconds
+        const timeout1 = setTimeout(() => {
+            fetchProducts();
+        }, 1500);
+
+        // Refetch after 3 seconds (1.5s + 1.5s)
+        const timeout2 = setTimeout(() => {
+            fetchProducts();
+        }, 3000);
+
+        // Cleanup timeouts on component unmount
+        return () => {
+            clearTimeout(timeout1);
+            clearTimeout(timeout2);
+        };
     }, []);
 
     // Navbar logic removed
