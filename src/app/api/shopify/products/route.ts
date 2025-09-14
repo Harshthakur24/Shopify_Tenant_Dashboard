@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
   const queryShop = params.get("shop") || undefined;
 
   let shopDomain = process.env.SHOPIFY_SHOP_DOMAIN || "xeno-assignment-store.myshopify.com";
-  let accessToken: string | undefined = undefined;
+  let accessToken: string | undefined = process.env.SHOPIFY_ACCESS_TOKEN || undefined;
   let usingFallback = true;
   let tenantId: string | undefined = undefined;
 
