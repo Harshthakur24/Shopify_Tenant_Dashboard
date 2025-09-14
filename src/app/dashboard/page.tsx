@@ -101,11 +101,13 @@ export default function ShopifyDashboard() {
     const [colorsVisible, setColorsVisible] = useState<Record<string, boolean>>({});
     const [variantsExpanded, setVariantsExpanded] = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab] = useState("overview");
+    const [selectedButton, setSelectedButton] = useState("products");
     // Navbar removed per request
 
-    // Ensure overview tab is always the default
+    // Ensure overview tab and products button are shown by default
     useEffect(() => {
         setActiveTab("overview");
+        setSelectedButton("products");
     }, []);
 
     useEffect(() => {
@@ -133,20 +135,14 @@ export default function ShopifyDashboard() {
         // Initial fetch
         fetchProducts();
 
-        // Refetch after 1.5 seconds
+        // Refetch after 3.5 seconds (just to ensure latest data is loaded after sync)
         const timeout1 = setTimeout(() => {
             fetchProducts();
-        }, 1500);
+        }, 3500);
 
-        // Refetch after 3 seconds (1.5s + 1.5s)
-        const timeout2 = setTimeout(() => {
-            fetchProducts();
-        }, 3000);
 
-        // Cleanup timeouts on component unmount
         return () => {
             clearTimeout(timeout1);
-            clearTimeout(timeout2);
         };
     }, [dateRange.start, dateRange.end]);
 
@@ -516,194 +512,241 @@ export default function ShopifyDashboard() {
                 )}
 
                 <div className="flex items-center gap-3">
-                    <div className="bg-blue-500 p-2 rounded-lg">
-                        <Package className="h-6 w-6 text-white" />
+                    <div className={`p-2 rounded-lg ${selectedButton === "products" ? "bg-orange-500" :
+                        selectedButton === "customers" ? "bg-blue-500" :
+                            selectedButton === "orders" ? "bg-purple-500" :
+                                "bg-orange-500"
+                        }`}>
+                        {selectedButton === "products" && <ShoppingBag className="h-6 w-6 text-white" />}
+                        {selectedButton === "customers" && <Users className="h-6 w-6 text-white" />}
+                        {selectedButton === "orders" && <Package className="h-6 w-6 text-white" />}
+                        {!selectedButton && <ShoppingBag className="h-6 w-6 text-white" />}
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-foreground">Your Store Products</h2>
-                        <p className="text-muted-foreground">Comprehensive view of your Products</p>
+                        <h2 className="text-2xl font-bold text-foreground">
+                            {selectedButton === "products" && "Your Store Products"}
+                            {selectedButton === "customers" && "Your Customers"}
+                            {selectedButton === "orders" && "Your Orders"}
+                            {!selectedButton && "Your Store Products"}
+                        </h2>
+                        <p className="text-muted-foreground">
+                            {selectedButton === "products" && "Comprehensive view of your Products"}
+                            {selectedButton === "customers" && "Manage your customer relationships"}
+                            {selectedButton === "orders" && "Track and manage your orders"}
+                            {!selectedButton && "Comprehensive view of your Products"}
+                        </p>
                     </div>
 
                     {/* Navigation Buttons */}
                     <div className="flex items-center gap-3 ml-10">
+                        <Button
+                            onClick={() => setSelectedButton("products")}
+                            className={`py-7 px-5 text-white shadow-lg rounded-full hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 ${selectedButton === "products"
+                                ? "bg-orange-600 ring-2 ring-orange-300"
+                                : "bg-orange-500 hover:bg-orange-600"
+                                }`}
+                        >
+                            <ShoppingBag className="w-4 h-4 mr-2" />
+                            Your Products {selectedButton === "products" && "✓"}
+                        </Button>
+
+                        <Button
+                            onClick={() => setSelectedButton("customers")}
+                            className={`py-7 px-5 text-white shadow-lg rounded-full hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 ${selectedButton === "customers"
+                                ? "bg-blue-600 ring-2 ring-blue-300"
+                                : "bg-blue-500 hover:bg-blue-600"
+                                }`}
+                        >
+                            <Users className="w-4 h-4 mr-2" />
+                            Your Customers {selectedButton === "customers" && "✓"}
+                        </Button>
+
+                        <Button
+                            onClick={() => setSelectedButton("orders")}
+                            className={`py-7 px-5 text-white shadow-lg rounded-full hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 ${selectedButton === "orders"
+                                ? "bg-purple-600 ring-2 ring-purple-300"
+                                : "bg-purple-500 hover:bg-purple-600"
+                                }`}
+                        >
+                            <Package className="w-4 h-4 mr-2" />
+                            Your Orders {selectedButton === "orders" && "✓"}
+                        </Button>
+
                         <Link href="/shopify-integration">
                             <Button className="bg-green-500 py-7 px-5 text-white shadow-lg rounded-full hover:bg-green-600 hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105">
                                 <ShoppingBag className="w-4 h-4 mr-2" />
                                 Shopify Integration <ArrowRight className="w-4 h-4 group-hover:translate-x-1 items-center" />
                             </Button>
                         </Link>
-
-                        <Button
-                            onClick={() => setActiveTab("customers")}
-                            className={`py-7 px-5 text-white shadow-lg rounded-full hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 ${activeTab === "customers"
-                                ? "bg-blue-600 ring-2 ring-blue-300"
-                                : "bg-blue-500 hover:bg-blue-600"
-                                }`}
-                        >
-                            <Users className="w-4 h-4 mr-2" />
-                            View Customers {activeTab === "customers" && "✓"}
-                        </Button>
-
-                        <Button
-                            onClick={() => setActiveTab("orders")}
-                            className={`py-7 px-5 text-white shadow-lg rounded-full hover:cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105 ${activeTab === "orders"
-                                ? "bg-purple-600 ring-2 ring-purple-300"
-                                : "bg-purple-500 hover:bg-purple-600"
-                                }`}
-                        >
-                            <Package className="w-4 h-4 mr-2" />
-                            View Orders {activeTab === "orders" && "✓"}
-                        </Button>
                     </div>
                 </div>
 
 
 
-                {/* Products Grid - Original Style */}
-                <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {filtered.map((product) => (
-                        <article key={product.id} className="group overflow-hidden rounded-2xl border border-blue-100/50 bg-white/80 shadow-lg transition duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-white/90">
-                            <div className="relative h-64 w-full bg-neutral-100 overflow-hidden">
-                                {product.image?.src ? (
-                                    <Image
-                                        src={product.image.src}
-                                        alt={product.image.alt || product.title}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        className="object-cover transition duration-300 group-hover:scale-105"
-                                    />
-                                ) : (
-                                    <div className="flex items-center justify-center h-full bg-gradient-to-br from-neutral-100 to-neutral-200">
-                                        <div className="text-center">
-                                            <Package className="h-12 w-12 text-neutral-400 mx-auto mb-2" />
-                                            <p className="text-sm text-neutral-500">No Image</p>
+                {/* Content Switching Area */}
+                <div className="space-y-6">
+                    {selectedButton === "products" && (
+                        <div>
+                            <h3 className="text-xl font-semibold mb-4">Your Products</h3>
+                            <section className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                                {filtered.map((product) => (
+                                    <article key={product.id} className="group overflow-hidden rounded-2xl border border-blue-100/50 bg-white/80 shadow-lg transition duration-300 hover:scale-[1.02] hover:shadow-xl hover:bg-white/90">
+                                        <div className="relative h-64 w-full bg-neutral-100 overflow-hidden">
+                                            {product.image?.src ? (
+                                                <Image
+                                                    src={product.image.src}
+                                                    alt={product.image.alt || product.title}
+                                                    fill
+                                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                                    className="object-cover transition duration-300 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="flex items-center justify-center h-full bg-gradient-to-br from-neutral-100 to-neutral-200">
+                                                    <div className="text-center">
+                                                        <Package className="h-12 w-12 text-neutral-400 mx-auto mb-2" />
+                                                        <p className="text-sm text-neutral-500">No Image</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/20 to-transparent p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-700'}`}>
+                                                        {product.status || 'draft'}
+                                                    </span>
+                                                    <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                                                        ₹{Number(product.variants?.[0]?.price || 0).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/20 to-transparent p-4">
-                                    <div className="flex items-center justify-between">
-                                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${product.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-700'}`}>
-                                            {product.status || 'draft'}
-                                        </span>
-                                        <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                                            ₹{Number(product.variants?.[0]?.price || 0).toLocaleString()}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="p-4">
-                                <div className="flex items-start justify-between gap-2">
-                                    <h2 className="line-clamp-1 text-lg font-semibold text-neutral-900">{product.title}</h2>
-                                    {product.vendor && (
-                                        <span className="whitespace-nowrap text-xs text-neutral-500">{product.vendor}</span>
-                                    )}
-                                </div>
-                                <div
-                                    className={`prose prose-sm mt-2 max-w-none text-neutral-600 ${descExpanded[String(product.id)] ? '' : 'line-clamp-3'}`}
-                                    dangerouslySetInnerHTML={{ __html: product.body_html || '' }}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setDescExpanded((s) => ({ ...s, [String(product.id)]: !s[String(product.id)] }))}
-                                    className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
-                                >
-                                    {descExpanded[String(product.id)] ? 'Show less' : 'Show more'}
-                                </button>
-
-                                {product.options && product.options.length > 0 && (
-                                    <div className="mt-3">
-                                        {!colorsVisible[String(product.id)] ? (
+                                        <div className="p-4">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <h2 className="line-clamp-1 text-lg font-semibold text-neutral-900">{product.title}</h2>
+                                                {product.vendor && (
+                                                    <span className="whitespace-nowrap text-xs text-neutral-500">{product.vendor}</span>
+                                                )}
+                                            </div>
+                                            <div
+                                                className={`prose prose-sm mt-2 max-w-none text-neutral-600 ${descExpanded[String(product.id)] ? '' : 'line-clamp-3'}`}
+                                                dangerouslySetInnerHTML={{ __html: product.body_html || '' }}
+                                            />
                                             <button
                                                 type="button"
-                                                onClick={() => setColorsVisible((s) => ({ ...s, [String(product.id)]: true }))}
-                                                className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100"
+                                                onClick={() => setDescExpanded((s) => ({ ...s, [String(product.id)]: !s[String(product.id)] }))}
+                                                className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
                                             >
-                                                Show colors
+                                                {descExpanded[String(product.id)] ? 'Show less' : 'Show more'}
                                             </button>
-                                        ) : (
-                                            <>
-                                                <div className="mb-2 flex flex-wrap gap-2">
-                                                    {product.options.flatMap((opt) =>
-                                                        (opt.values || []).map((val, idx) => (
-                                                            <span key={`${String(opt.id)}-${idx}`} className="inline-flex items-center rounded-md bg-blue-100/50 px-2 py-1 text-xs font-medium text-blue-700 backdrop-blur-lg">
-                                                                {val}
-                                                            </span>
-                                                        ))
+
+                                            {product.options && product.options.length > 0 && (
+                                                <div className="mt-3">
+                                                    {!colorsVisible[String(product.id)] ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setColorsVisible((s) => ({ ...s, [String(product.id)]: true }))}
+                                                            className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100"
+                                                        >
+                                                            Show colors
+                                                        </button>
+                                                    ) : (
+                                                        <>
+                                                            <div className="mb-2 flex flex-wrap gap-2">
+                                                                {product.options.flatMap((opt) =>
+                                                                    (opt.values || []).map((val, idx) => (
+                                                                        <span key={`${String(opt.id)}-${idx}`} className="inline-flex items-center rounded-md bg-blue-100/50 px-2 py-1 text-xs font-medium text-blue-700 backdrop-blur-lg">
+                                                                            {val}
+                                                                        </span>
+                                                                    ))
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setColorsVisible((s) => ({ ...s, [String(product.id)]: false }))}
+                                                                className="rounded-md border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50"
+                                                            >
+                                                                Hide colors
+                                                            </button>
+                                                        </>
                                                     )}
                                                 </div>
+                                            )}
+
+                                            <div className="mt-4 rounded-lg border border-neutral-200/50 bg-white/50">
+                                                {(variantsExpanded[String(product.id)] ? (product.variants || []) : (product.variants || []).slice(0, 1)).map((variant, idx, arr) => (
+                                                    <div key={`${product.id}-variant-${idx}-${variant.id}`} className={`flex items-center justify-between px-3 py-2 ${idx === 0 ? 'first:rounded-t-lg' : ''} ${idx === arr.length - 1 && (!variantsExpanded[String(product.id)] || (product.variants || []).length === arr.length) ? 'last:rounded-b-lg last:border-0' : ''} border-b border-neutral-200`}>
+                                                        <span className="text-sm text-neutral-700">{variant.title}</span>
+                                                        <span className="text-sm font-semibold text-blue-600">₹{Number(variant.price).toLocaleString()}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {(product.variants && product.variants.length > 1) && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => setColorsVisible((s) => ({ ...s, [String(product.id)]: false }))}
-                                                    className="rounded-md border border-blue-200 bg-white px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50"
+                                                    onClick={() => setVariantsExpanded((s) => ({ ...s, [String(product.id)]: !s[String(product.id)] }))}
+                                                    className="mt-2 border border-blue-200 bg-white px-4 py-3 text-xs font-bold rounded-full hover:scale-105 duration-300 hover:cursor-pointer text-blue-700 hover:bg-blue-50"
                                                 >
-                                                    Hide colors
+                                                    {variantsExpanded[String(product.id)] ? 'Hide varieties' : `Show all varieties of this product (${product.variants.length})`}
                                                 </button>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
+                                            )}
 
-                                <div className="mt-4 rounded-lg border border-neutral-200/50 bg-white/50">
-                                    {(variantsExpanded[String(product.id)] ? (product.variants || []) : (product.variants || []).slice(0, 1)).map((variant, idx, arr) => (
-                                        <div key={`${product.id}-variant-${idx}-${variant.id}`} className={`flex items-center justify-between px-3 py-2 ${idx === 0 ? 'first:rounded-t-lg' : ''} ${idx === arr.length - 1 && (!variantsExpanded[String(product.id)] || (product.variants || []).length === arr.length) ? 'last:rounded-b-lg last:border-0' : ''} border-b border-neutral-200`}>
-                                            <span className="text-sm text-neutral-700">{variant.title}</span>
-                                            <span className="text-sm font-semibold text-blue-600">₹{Number(variant.price).toLocaleString()}</span>
+                                            <div className="mt-4 flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <a
+                                                        href={`https://xeno-assignment-store.myshopify.com/products/${product.handle ?? ''}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:translate-y-[-1px] hover:shadow-md active:translate-y-[1px]"
+                                                    >
+                                                        View Product
+                                                    </a>
+                                                    <a
+                                                        href={`https://xeno-assignment-store.myshopify.com/products/${product.handle ?? ''}`}
+                                                        target="_blank"
+                                                        className="rounded-xl border border-blue-200 bg-white/80 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm backdrop-blur-lg transition hover:border-blue-300 hover:bg-white hover:translate-y-[-1px] hover:shadow-md active:translate-y-[1px]"
+                                                    >
+                                                        Manage Stock
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
-                                    ))}
-                                </div>
-                                {(product.variants && product.variants.length > 1) && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setVariantsExpanded((s) => ({ ...s, [String(product.id)]: !s[String(product.id)] }))}
-                                        className="mt-2 border border-blue-200 bg-white px-4 py-3 text-xs font-bold rounded-full hover:scale-105 duration-300 hover:cursor-pointer text-blue-700 hover:bg-blue-50"
-                                    >
-                                        {variantsExpanded[String(product.id)] ? 'Hide varieties' : `Show all varieties of this product (${product.variants.length})`}
-                                    </button>
-                                )}
+                                    </article>
+                                ))}
+                            </section>
+                            {filtered.length === 0 && (
+                                <Card className="text-center py-12">
+                                    <CardContent className="space-y-4">
+                                        <Package className="h-16 w-16 text-muted-foreground mx-auto" />
+                                        <div className="space-y-2">
+                                            <CardTitle className="text-xl">No products found</CardTitle>
+                                            <CardDescription>
+                                                Try adjusting your search criteria or filters to find products
+                                            </CardDescription>
+                                        </div>
+                                        <Button variant="outline" onClick={() => {
+                                            setSearch('');
+                                            setCategory('');
+                                            setDateRange({ start: '', end: '' });
+                                        }}>
+                                            Clear Filters
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                    )}
 
-                                <div className="mt-4 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <a
-                                            href={`https://xeno-assignment-store.myshopify.com/products/${product.handle ?? ''}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:translate-y-[-1px] hover:shadow-md active:translate-y-[1px]"
-                                        >
-                                            View Product
-                                        </a>
-                                        <a
-                                            href={`https://xeno-assignment-store.myshopify.com/products/${product.handle ?? ''}`}
-                                            target="_blank"
-                                            className="rounded-xl border border-blue-200 bg-white/80 px-4 py-2 text-sm font-medium text-blue-600 shadow-sm backdrop-blur-lg transition hover:border-blue-300 hover:bg-white hover:translate-y-[-1px] hover:shadow-md active:translate-y-[1px]"
-                                        >
-                                            Manage Stock
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-                    ))}
-                </section>
-                {filtered.length === 0 && (
-                    <Card className="text-center py-12">
-                        <CardContent className="space-y-4">
-                            <Package className="h-16 w-16 text-muted-foreground mx-auto" />
-                            <div className="space-y-2">
-                                <CardTitle className="text-xl">No products found</CardTitle>
-                                <CardDescription>
-                                    Try adjusting your search criteria or filters to find products
-                                </CardDescription>
-                            </div>
-                            <Button variant="outline" onClick={() => {
-                                setSearch('');
-                                setCategory('');
-                                setDateRange({ start: '', end: '' });
-                            }}>
-                                Clear Filters
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
+                    {selectedButton === "customers" && (
+                        <div>
+                            <CustomersList />
+                        </div>
+                    )}
+
+                    {selectedButton === "orders" && (
+                        <div>
+                            <OrdersList />
+                        </div>
+                    )}
+                </div>
 
                 {/* Quick Navigation Section */}
                 <motion.div
@@ -762,14 +805,10 @@ export default function ShopifyDashboard() {
                         className="space-y-6"
                     >
                         <div className="flex items-center justify-between">
-                            <TabsList className="grid w-full max-w-2xl grid-cols-6">
+                            <TabsList className="grid w-full max-w-2xl grid-cols-3">
                                 <TabsTrigger value="overview" className="flex items-center gap-2">
                                     <BarChart3 className="h-4 w-4" />
                                     Overview
-                                </TabsTrigger>
-                                <TabsTrigger value="products" className="flex items-center gap-2">
-                                    <Package className="h-4 w-4" />
-                                    Products
                                 </TabsTrigger>
                                 <TabsTrigger value="performance" className="flex items-center gap-2">
                                     <Activity className="h-4 w-4" />
@@ -778,14 +817,6 @@ export default function ShopifyDashboard() {
                                 <TabsTrigger value="vendors" className="flex items-center gap-2">
                                     <Users className="h-4 w-4" />
                                     Vendors
-                                </TabsTrigger>
-                                <TabsTrigger value="customers" className="flex items-center gap-2">
-                                    <Users className="h-4 w-4" />
-                                    Customers
-                                </TabsTrigger>
-                                <TabsTrigger value="orders" className="flex items-center gap-2">
-                                    <ShoppingBag className="h-4 w-4" />
-                                    Orders
                                 </TabsTrigger>
                             </TabsList>
                         </div>
