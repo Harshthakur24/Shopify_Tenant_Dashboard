@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { cleanShopDomain } from "@/lib/shopify-utils";
 import { cacheDel } from "@/lib/redis";
+import { createJwt } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -62,6 +63,23 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    // Get the created user to create JWT token
+    const newUser = await prisma.user.findUnique({ 
+      where: { email },
+      include: { tenant: true }
+    });
+
+    if (!newUser) {
+      throw new Error("User creation failed");
+    }
+
+    // Create JWT token for the new user (same as login)
+    const token = await createJwt({ 
+      userId: newUser.id, 
+      tenantId: newUser.tenantId, 
+      email: newUser.email 
+    });
+
     // Clear any existing cache for this shop domain to ensure fresh data for new user
     try {
       await cacheDel(`products:${cleanShopDomainValue}:*`);
@@ -71,7 +89,10 @@ export async function POST(request: NextRequest) {
       // Don't fail registration if cache clearing fails
     }
 
-    return NextResponse.json({ ok: true, message }, { status: 201 });
+    // Set auth cookie (same as login) and return response
+    const res = NextResponse.json({ ok: true, message }, { status: 201 });
+    res.cookies.set("auth", token, { httpOnly: true, sameSite: "lax", secure: false, path: "/", maxAge: 60 * 60 * 24 * 7 });
+    return res;
   } catch (err: unknown) {
     if (err instanceof PrismaClientKnownRequestError && err.code === "P2002") {
       const target = (err.meta?.target as string[] | undefined)?.join(", ") ?? "";

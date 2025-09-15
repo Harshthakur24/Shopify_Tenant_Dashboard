@@ -117,7 +117,12 @@ export default function ShopifyDashboard() {
                 if (dateRange.start) url.searchParams.set('startDate', dateRange.start);
                 if (dateRange.end) url.searchParams.set('endDate', dateRange.end);
 
-                const res = await fetch(url.toString());
+                // Add cache-busting parameter to ensure fresh data
+                url.searchParams.set('_t', Date.now().toString());
+
+                const res = await fetch(url.toString(), {
+                    credentials: 'include', // Ensure cookies are sent
+                });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
                 setProducts(Array.isArray(json?.products) ? json.products : []);

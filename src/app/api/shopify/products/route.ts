@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
   const queryShop = params.get("shop") || undefined;
   const startDate = params.get("startDate") || undefined;
   const endDate = params.get("endDate") || undefined;
+  const forceFresh = params.get("_t") || params.get("fresh") || undefined; // Cache-busting parameter
 
   let shopDomain = process.env.SHOPIFY_SHOP_DOMAIN || "xeno-assignjjment-store.myshopify.com";
   let accessToken: string | undefined = process.env.SHOPIFY_ACCESS_TOKEN || undefined;
@@ -75,8 +76,8 @@ export async function GET(request: NextRequest) {
   const lockKey = `lock:${cacheKey}`;
 
   try {
-    // Check cache first
-    const cached = await cacheGet<{ products: Record<string, unknown>[] }>(cacheKey);
+    // Check cache first (skip cache if forceFresh parameter is present)
+    const cached = forceFresh ? null : await cacheGet<{ products: Record<string, unknown>[] }>(cacheKey);
     
     if (cached) {
       console.log(`✅ Returning cached products for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
@@ -191,8 +192,9 @@ export async function GET(request: NextRequest) {
       }, { status: 200 });
     }
 
-    // Cache miss - fetch from Shopify API immediately
-    console.log(`🔄 Cache miss - fetching fresh data from Shopify for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
+    // Cache miss or force fresh - fetch from Shopify API immediately
+    const reason = forceFresh ? 'force fresh' : 'cache miss';
+    console.log(`🔄 ${reason} - fetching fresh data from Shopify for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
     const apiUrl = new URL(`https://${shopDomain}/admin/api/2025-07/products.json`);
     if (startDate) apiUrl.searchParams.set('created_at_min', startDate);
     if (endDate) apiUrl.searchParams.set('created_at_max', endDate);
