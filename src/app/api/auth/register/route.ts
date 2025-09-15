@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { cleanShopDomain } from "@/lib/shopify-utils";
+import { cacheDel } from "@/lib/redis";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -17,6 +19,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing fields (access token is required)" }, { status: 400 });
   }
 
+  // Clean and validate the shop domain (remove https:// if present)
+  let cleanShopDomainValue: string;
+  try {
+    cleanShopDomainValue = cleanShopDomain(shopDomain);
+  } catch (error) {
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : "Invalid shop domain format" 
+    }, { status: 400 });
+  }
+
   const passwordHash = await bcrypt.hash(password, 10);
 
   try {
@@ -29,11 +41,11 @@ export async function POST(request: NextRequest) {
     let message = "Account created successfully";
 
     await prisma.$transaction(async (tx) => {
-      // Reuse existing tenant if shopDomain is already connected
-      let tenant = await tx.tenant.findUnique({ where: { shopDomain } });
+      // Reuse existing tenant if shopDomain is already connected (using cleaned domain)
+      let tenant = await tx.tenant.findUnique({ where: { shopDomain: cleanShopDomainValue } });
       if (!tenant) {
         tenant = await tx.tenant.create({
-          data: { name: tenantName, shopDomain, accessToken },
+          data: { name: tenantName, shopDomain: cleanShopDomainValue, accessToken },
         });
       } else {
         message = "Joined existing workspace";
@@ -49,6 +61,15 @@ export async function POST(request: NextRequest) {
         },
       });
     });
+
+    // Clear any existing cache for this shop domain to ensure fresh data for new user
+    try {
+      await cacheDel(`products:${cleanShopDomainValue}:*`);
+      console.log(`🧹 Cleared cache for new user registration: ${cleanShopDomainValue}`);
+    } catch (cacheError) {
+      console.warn("Failed to clear cache during registration:", cacheError);
+      // Don't fail registration if cache clearing fails
+    }
 
     return NextResponse.json({ ok: true, message }, { status: 201 });
   } catch (err: unknown) {

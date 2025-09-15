@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   ensureSyncCron();
 
   const auth = request.cookies.get("auth")?.value || "";
-  const payload = auth ? await verifyJwt<{ tenantId: string }>(auth) : null;
+  const payload = auth ? await verifyJwt(auth) : null;
   const params = request.nextUrl.searchParams;
   const queryTenantId = params.get("tenantId") || undefined;
   const queryShop = params.get("shop") || undefined;
@@ -69,7 +69,9 @@ export async function GET(request: NextRequest) {
   }
 
   const dateFilter = startDate || endDate ? `:${startDate || 'all'}:${endDate || 'all'}` : '';
-  const cacheKey = `products:${shopDomain}${dateFilter}`;
+  // Include userId and email in cache key to ensure user isolation
+  const userKey = payload?.userId && payload?.email ? `:user:${payload.userId}:email:${payload.email}` : '';
+  const cacheKey = `products:${shopDomain}${userKey}${dateFilter}`;
   const lockKey = `lock:${cacheKey}`;
 
   try {
@@ -77,7 +79,7 @@ export async function GET(request: NextRequest) {
     const cached = await cacheGet<{ products: Record<string, unknown>[] }>(cacheKey);
     
     if (cached) {
-      console.log(`✅ Returning cached products for ${shopDomain}`);
+      console.log(`✅ Returning cached products for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
       
       // Start background refresh (non-blocking)
       (async () => {
@@ -182,13 +184,15 @@ export async function GET(request: NextRequest) {
         __fallback: false,
         __source: "redis-cache",
         __shopDomain: shopDomain,
+        __userId: payload?.userId || 'unknown',
+        __email: payload?.email || 'unknown',
         __timestamp: new Date().toISOString(),
         __dataSource: "Redis Cache (Background refresh in progress)"
       }, { status: 200 });
     }
 
     // Cache miss - fetch from Shopify API immediately
-    console.log(`🔄 Cache miss - fetching fresh data from Shopify for ${shopDomain}`);
+    console.log(`🔄 Cache miss - fetching fresh data from Shopify for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
     const apiUrl = new URL(`https://${shopDomain}/admin/api/2025-07/products.json`);
     if (startDate) apiUrl.searchParams.set('created_at_min', startDate);
     if (endDate) apiUrl.searchParams.set('created_at_max', endDate);
@@ -206,7 +210,7 @@ export async function GET(request: NextRequest) {
     
     // Cache the fresh data for 5 minutes (300 seconds)
           await cacheSet(cacheKey, fresh, 300);
-    console.log(`💾 Cached fresh products data for ${shopDomain}`);
+    console.log(`💾 Cached fresh products data for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
 
     // Upsert products into DB (only if database is available)
           if (tenantId && Array.isArray(fresh?.products)) {
@@ -286,6 +290,8 @@ export async function GET(request: NextRequest) {
       __fallback: false,
       __source: "shopify",
       __shopDomain: shopDomain,
+      __userId: payload?.userId || 'unknown',
+      __email: payload?.email || 'unknown',
       __timestamp: new Date().toISOString(),
       __databaseStored: tenantId ? "attempted" : "skipped",
       __dataSource: "Live Shopify API (Fresh)"

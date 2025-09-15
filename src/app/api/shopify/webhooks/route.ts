@@ -65,10 +65,14 @@ interface WebhookCart {
 
 // Resolve or create a tenant from the incoming webhook's shop domain
 async function resolveTenantFromShop(shop: string | null) {
-  const shopDomain = String(shop || '').toLowerCase();
-  if (!shopDomain) {
+  const rawShopDomain = String(shop || '');
+  if (!rawShopDomain) {
     throw new Error('Missing shop domain');
   }
+  
+  // Clean the shop domain (remove https:// if present)
+  const shopDomain = rawShopDomain.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+  
   let tenant = await prisma.tenant.findUnique({ where: { shopDomain } });
   if (!tenant) {
     tenant = await prisma.tenant.create({
