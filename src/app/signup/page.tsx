@@ -227,10 +227,10 @@ export default function SignupPage() {
                                     required
                                     placeholder="••••••••"
                                     className={`w-full rounded-xl border-2 bg-white px-4 py-3.5 pr-12 text-sm placeholder:text-neutral-400 transition-all duration-300 focus:outline-none focus:ring-4 group-hover:border-violet-300 ${confirmPassword && password !== confirmPassword
-                                            ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
-                                            : confirmPassword && password === confirmPassword
-                                                ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
-                                                : 'border-neutral-200 focus:border-violet-500 focus:ring-violet-500/20'
+                                        ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                                        : confirmPassword && password === confirmPassword
+                                            ? 'border-green-300 focus:border-green-500 focus:ring-green-500/20'
+                                            : 'border-neutral-200 focus:border-violet-500 focus:ring-violet-500/20'
                                         }`}
                                 />
                                 <button
@@ -294,7 +294,7 @@ export default function SignupPage() {
                         <button
                             type="submit"
                             disabled={loading || (!!confirmPassword && password !== confirmPassword)}
-                            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-violet-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            className="group relative inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] hover:cursor-pointer focus:outline-none focus:ring-4 focus:ring-violet-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                         >
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-700 to-purple-700 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-disabled:opacity-0" />
                             <span className="relative z-10 flex items-center gap-2">
