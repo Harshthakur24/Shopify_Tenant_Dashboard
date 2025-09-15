@@ -325,7 +325,7 @@ export default function SignupPage() {
                                 href="/login"
                                 className="font-semibold text-violet-600 hover:text-violet-700 transition-all duration-200 hover:underline underline-offset-4 decoration-2 decoration-violet-600/30"
                             >
-                                Sign in
+                                Log in
                             </Link>
                         </p>
                         <div className="mt-4 flex items-center justify-center gap-2 text-xs text-neutral-500">
