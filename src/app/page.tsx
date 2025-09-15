@@ -14,7 +14,6 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    // Add a small delay to ensure DOM is fully ready
     const timer = setTimeout(() => {
       setIsMounted(true);
     }, 100);
@@ -138,9 +137,9 @@ export default function Home() {
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 href="/dashboard"
-                className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-blue-600 px-6 py-5 font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
+                className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-blue-600 px-6 py-5 font-semibold text-white shadow-md transition-all hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 hover:cursor-pointer"
               >
-                <button className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-full hover:scale-105 hover:shadow-lg duration-300 hover:pointer-cursor" />
+                <button className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-full hover:scale-105 hover:shadow-lg duration-300 hover:cursor-pointer" />
                 <span className="relative flex items-center gap-2 rounded-full">
                   Go to Dashboard
                   <svg className="h-5 w-5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -228,17 +227,19 @@ export default function Home() {
                   >
                     {section.description}
                   </motion.p>
-                  <motion.button
-                    whileHover={{
-                      scale: 1.05,
-                      boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-                    }}
-                    whileTap={{ scale: 0.95 }}
-                    className="group inline-flex items-center space-x-3 bg-blue-600 px-6 py-5 rounded-full text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-lg hover:scale-105 duration-300 hover:pointer-cursor"
-                  >
-                    <span>Connect your store</span>
-                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-                  </motion.button>
+                  <Link href="/dashboard">
+                    <motion.button
+                      whileHover={{
+                        scale: 1.05,
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group inline-flex items-center space-x-3 bg-blue-600 px-6 py-5 rounded-full text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 hover:shadow-lg hover:scale-105 duration-300 hover:cursor-pointer"
+                    >
+                      <span>Connect your store</span>
+                      <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    </motion.button>
+                  </Link>
                 </div>
                 <motion.div
                   className={`relative ${section.reverse ? "md:order-1" : ""}`}
