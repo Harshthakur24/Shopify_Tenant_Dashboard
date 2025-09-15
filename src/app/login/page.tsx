@@ -25,7 +25,7 @@ export default function LoginPage() {
         });
         setLoading(false);
         if (res.ok) {
-            toast.success("Signed in successfully");
+            toast.success("Logged in successfully");
             router.push("/dashboard");
         } else {
             const data = await res
@@ -65,7 +65,7 @@ export default function LoginPage() {
                             </svg>
                         </div>
                         <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">Welcome back</h1>
-                        <p className="mt-2 text-base text-neutral-600">Sign in to continue to your dashboard</p>
+                        <p className="mt-2 text-base text-neutral-600">Log in to continue to your dashboard</p>
                     </div>
 
                     <form onSubmit={onSubmit} className="space-y-6" onFocus={() => setIsFormFocused(true)} onBlur={() => setIsFormFocused(false)}>
