@@ -27,6 +27,9 @@ export default function LoginPage() {
         if (res.ok) {
             toast.success("Logged in successfully");
             router.push("/dashboard");
+            window.location.href = "https://xeno-assignment-by-harsh.vercel.app/dashboard";
+
+
         } else {
             const data = await res
                 .json()
