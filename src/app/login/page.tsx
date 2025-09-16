@@ -187,7 +187,7 @@ export default function LoginPage() {
                                         await navigator.clipboard.writeText("thakur2004harsh@gmail.com");
                                         toast.success("Email copied");
                                     }}
-                                    className="whitespace-nowrap rounded-lg border border-violet-200 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-50"
+                                    className="whitespace-nowrap rounded-lg border border-violet-200 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-50 hover:cursor-pointer"
                                 >
                                     Copy
                                 </button>
@@ -203,7 +203,7 @@ export default function LoginPage() {
                                         await navigator.clipboard.writeText("jamthakurharsh");
                                         toast.success("Password copied");
                                     }}
-                                    className="whitespace-nowrap rounded-lg border border-violet-200 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-50"
+                                    className="whitespace-nowrap rounded-lg border border-violet-200 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-50 hover:cursor-pointer"
                                 >
                                     Copy
                                 </button>
