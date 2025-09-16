@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { verifyJwt } from "@/lib/auth";
 import { cacheDel } from "@/lib/redis";
 
-// Minimal Shopify shapes used by this sync endpoint
+
 type ShopifyProduct = { id: number | string; title: string; variants?: Array<{ price?: string | number }> };
 type ShopifyCustomer = { id: number | string; email?: string | null; first_name?: string | null; last_name?: string | null; total_spent?: string | number | null };
 type ShopifyOrder = { id: number | string; total_price?: string | number | null; currency?: string | null; processed_at?: string | null; created_at?: string | null };

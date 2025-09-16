@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'dashboard';
 
-    // Return mock data for now to avoid Shopify API issues during build
+   
     const mockData = {
       products: [],
       orders: [],

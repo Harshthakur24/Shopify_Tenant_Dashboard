@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get authentication token from cookies
+   
     const token = request.cookies.get('auth')?.value;
     
     if (!token) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Verify JWT token
+   
     const payload = await verifyJwt(token);
     if (!payload) {
       return NextResponse.json(
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get tenant credentials from database
+   
     const tenant = await prisma.tenant.findUnique({
       where: { id: payload.tenantId },
       select: {
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       // Fetch specific order
       url = `https://${shop}/admin/api/2024-10/orders/${orderId}.json`;
     } else {
-      // Fetch orders list with pagination and filters - Shopify uses different pagination
+
       const limitNum = parseInt(limit);
       const pageNum = parseInt(page);
       const sinceId = pageNum > 1 ? (pageNum - 1) * limitNum : undefined;

@@ -12,27 +12,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
-    // Check if user exists
     const user = await prisma.user.findUnique({
       where: { email }
     });
 
-    // Always return success message (security best practice)
-    // Even if user doesn't exist, we don't reveal that information
     if (user) {
       // Generate secure reset token
       const resetToken = crypto.randomBytes(32).toString('hex');
       
-      // Set expiration to 1 hour from now
       const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-      // Store reset token in database
       await prisma.passwordResetToken.create({
         data: {
           token: resetToken,
@@ -41,20 +35,17 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Create reset URL
       const resetUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
 
-      // Send password reset email
       try {
         await sendPasswordResetEmail({
           to: email,
           resetUrl,
-          userName: user.email.split('@')[0], // Use email prefix as name
+          userName: user.email.split('@')[0],
         });
         console.log(`Password reset email sent to: ${email}`);
       } catch (emailError) {
         console.error('Failed to send password reset email:', emailError);
-        // Don't throw error to maintain security - user shouldn't know if email failed
       }
     }
 

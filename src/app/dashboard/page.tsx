@@ -102,9 +102,9 @@ export default function ShopifyDashboard() {
     const [variantsExpanded, setVariantsExpanded] = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab] = useState("overview");
     const [selectedButton, setSelectedButton] = useState("products");
-    // Navbar removed per request
 
-    // Ensure overview tab and products button are shown by default
+
+
     useEffect(() => {
         setActiveTab("overview");
         setSelectedButton("products");
@@ -117,11 +117,11 @@ export default function ShopifyDashboard() {
                 if (dateRange.start) url.searchParams.set('startDate', dateRange.start);
                 if (dateRange.end) url.searchParams.set('endDate', dateRange.end);
 
-                // Add cache-busting parameter to ensure fresh data
+
                 url.searchParams.set('_t', Date.now().toString());
 
                 const res = await fetch(url.toString(), {
-                    credentials: 'include', // Ensure cookies are sent
+                    credentials: 'include',
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json = await res.json();
@@ -137,10 +137,10 @@ export default function ShopifyDashboard() {
             }
         };
 
-        // Initial fetch
+
         fetchProducts();
 
-        // Refetch after 3.5 seconds (just to ensure latest data is loaded after sync)
+
         const timeout1 = setTimeout(() => {
             fetchProducts();
         }, 3500);
@@ -151,7 +151,7 @@ export default function ShopifyDashboard() {
         };
     }, [dateRange.start, dateRange.end]);
 
-    // Navbar logic removed
+
 
     if (loading) {
         return (
@@ -171,7 +171,7 @@ export default function ShopifyDashboard() {
         );
     }
 
-    // Derived metrics + filters
+
     const categories = Array.from(new Set(products.map(p => p.product_type || "Uncategorized")));
     const totalProducts = products.length;
     const activeProducts = products.filter(p => p.status === "active").length;
@@ -182,7 +182,7 @@ export default function ShopifyDashboard() {
     const allVariants = products.flatMap(p => p.variants || []);
     const totalVariants = allVariants.length;
 
-    // Price buckets (₹)
+
     const bucketLabels = ["<500", "500-999", "1000-1999", "2000-4999", "5000+"];
     const bucketCounts = [0, 0, 0, 0, 0];
     for (const v of allVariants) {
@@ -192,17 +192,17 @@ export default function ShopifyDashboard() {
         bucketCounts[idx] += 1;
     }
 
-    // Color / option1 distribution
+
     const colorCounts: Record<string, number> = {};
     for (const v of allVariants) {
         const key = (v.option1 || v.title || "Unknown").trim();
         if (!key) continue;
         colorCounts[key] = (colorCounts[key] || 0) + 1;
     }
-    const colorLabels = Object.keys(colorCounts).slice(0, 12); // cap labels for readability
+    const colorLabels = Object.keys(colorCounts).slice(0, 12);
     const colorValues = colorLabels.map(k => colorCounts[k]);
 
-    // Products created by day
+
     const byDay: Record<string, number> = {};
     for (const p of products) {
         if (!p.created_at) continue;
@@ -214,7 +214,7 @@ export default function ShopifyDashboard() {
     const dayLabels = Object.keys(byDay).sort();
     const dayValues = dayLabels.map(k => byDay[k]);
 
-    // Vendors share & top products by variant count
+
     const vendorCounts: Record<string, number> = {};
     for (const p of products) {
         const v = p.vendor || "Unknown";
@@ -230,7 +230,7 @@ export default function ShopifyDashboard() {
     const topVariantLabels = productsByVariantCount.map(p => p.title);
     const topVariantValues = productsByVariantCount.map(p => p.count);
 
-    // Min/Max price and stock status
+
     const prices = allVariants.map(v => Number(v.price || 0)).filter(n => !isNaN(n));
     const minPrice = prices.length ? Math.min(...prices) : 0;
     const maxPrice = prices.length ? Math.max(...prices) : 0;
@@ -289,7 +289,7 @@ export default function ShopifyDashboard() {
             )}
 
             <div className="container mx-auto p-6 space-y-8">
-                {/* Header Section */}
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

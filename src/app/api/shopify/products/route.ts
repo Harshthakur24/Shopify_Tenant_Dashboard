@@ -20,7 +20,7 @@ async function withDbRetry<T>(operation: () => Promise<T>, maxAttempts = 3, base
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
-      // If max attempts reached for P1001, throw a more specific error
+
       if (code === "P1001") {
         throw new Error(`Database unreachable after ${maxAttempts} attempts`);
       }
@@ -39,13 +39,13 @@ export async function GET(request: NextRequest) {
   const queryShop = params.get("shop") || undefined;
   const startDate = params.get("startDate") || undefined;
   const endDate = params.get("endDate") || undefined;
-  const forceFresh = params.get("_t") || params.get("fresh") || undefined; // Cache-busting parameter
+  const forceFresh = params.get("_t") || params.get("fresh") || undefined; 
 
   let shopDomain = process.env.SHOPIFY_SHOP_DOMAIN || "xeno-assignjjment-store.myshopify.com";
   let accessToken: string | undefined = process.env.SHOPIFY_ACCESS_TOKEN || undefined;
   let tenantId: string | undefined = undefined;
 
-  // Resolve tenant from DB if provided (with fallback to env vars)
+
   if (payload?.tenantId || queryTenantId || queryShop) {
     try {
       const tenant = queryTenantId
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       }
     } catch (error) {
       console.error("Failed to resolve tenant from DB, using environment fallback:", error);
-      // Continue with environment variables as fallback
+
     }
   }
 
@@ -70,19 +70,19 @@ export async function GET(request: NextRequest) {
   }
 
   const dateFilter = startDate || endDate ? `:${startDate || 'all'}:${endDate || 'all'}` : '';
-  // Include userId and email in cache key to ensure user isolation
+
   const userKey = payload?.userId && payload?.email ? `:user:${payload.userId}:email:${payload.email}` : '';
   const cacheKey = `products:${shopDomain}${userKey}${dateFilter}`;
   const lockKey = `lock:${cacheKey}`;
 
   try {
-    // Check cache first (skip cache if forceFresh parameter is present)
+
     const cached = forceFresh ? null : await cacheGet<{ products: Record<string, unknown>[] }>(cacheKey);
     
     if (cached) {
       console.log(`✅ Returning cached products for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
       
-      // Start background refresh (non-blocking)
+
       (async () => {
         const lockAcquired = await tryLock(lockKey, 30); // 30 second lock
         if (lockAcquired) {
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
               await cacheSet(cacheKey, fresh, 300); // 5 minutes
               console.log(`💾 Background refresh: updated cache for ${shopDomain}`);
               
-              // Store in database in background
+
               if (tenantId && Array.isArray(fresh?.products)) {
                 try {
                   for (const p of fresh.products) {
@@ -192,7 +192,7 @@ export async function GET(request: NextRequest) {
       }, { status: 200 });
     }
 
-    // Cache miss or force fresh - fetch from Shopify API immediately
+
     const reason = forceFresh ? 'force fresh' : 'cache miss';
     console.log(`🔄 ${reason} - fetching fresh data from Shopify for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
     const apiUrl = new URL(`https://${shopDomain}/admin/api/2025-07/products.json`);
@@ -210,13 +210,13 @@ export async function GET(request: NextRequest) {
 
           const fresh = await res.json();
     
-    // Cache the fresh data for 5 minutes (300 seconds)
+
           await cacheSet(cacheKey, fresh, 300);
     console.log(`💾 Cached fresh products data for ${shopDomain} (user: ${payload?.email || 'unknown'})`);
 
-    // Upsert products into DB (only if database is available)
+
           if (tenantId && Array.isArray(fresh?.products)) {
-      // Try to store in database, but don't fail if DB is unavailable
+   
       try {
         for (const p of fresh.products) {
           try {
@@ -280,11 +280,11 @@ export async function GET(request: NextRequest) {
         console.log(`✅ Stored ${fresh.products.length} products in database`);
       } catch (dbError) {
         console.error("Database unavailable, skipping product storage:", dbError);
-        // Continue without storing in database
+
       }
     }
 
-    // ✅ Return exact Shopify payload to frontend with source info
+
     return NextResponse.json({ 
       ...fresh, 
       __cached: false, 
@@ -301,12 +301,12 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Unexpected error:", error);
     
-    // Try database fallback if available
+
     if (tenantId) {
       try {
         console.log("🔄 Attempting database fallback...");
         
-        // Build date filter for database query
+
         const dateFilter: { gte?: Date; lte?: Date } = {};
         if (startDate) {
           dateFilter.gte = new Date(startDate);
@@ -352,7 +352,7 @@ export async function GET(request: NextRequest) {
           })
         );
 
-        // Convert to Shopify format
+        
         const products = dbProducts.map((p: Record<string, unknown>) => ({
           id: Number(p.shopId),
           title: p.title || "Unknown Product",

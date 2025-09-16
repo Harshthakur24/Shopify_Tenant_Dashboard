@@ -13,14 +13,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Validate password strength
+
     if (password.length < 8) {
       return NextResponse.json({ 
         error: "Password must be at least 8 characters long" 
       }, { status: 400 });
     }
 
-    // Find and validate reset token
+
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { token },
       include: { user: true }
@@ -44,10 +44,10 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Hash new password
+
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Update user password and mark token as used
+
     await prisma.$transaction([
       prisma.user.update({
         where: { id: resetToken.userId },
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET endpoint to verify token validity
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Find and validate reset token
+
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { token },
       include: { user: true }

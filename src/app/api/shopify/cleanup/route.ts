@@ -40,7 +40,7 @@ async function cleanupOrphanedProducts(tenantId?: string, shopDomain?: string) {
     const data = await response.json();
     const shopifyProductIds = new Set((data.products || []).map((p: { id: string | number }) => String(p.id)));
 
-    // Find orphaned products in database
+
     const whereClause = tenantId ? { tenantId } : {};
     const dbProducts = await prisma.product.findMany({
       where: whereClause,
@@ -49,7 +49,7 @@ async function cleanupOrphanedProducts(tenantId?: string, shopDomain?: string) {
 
     const orphanedProducts = dbProducts.filter(p => !shopifyProductIds.has(p.shopId));
 
-    // Delete orphaned products
+    
     if (orphanedProducts.length > 0) {
       const orphanedIds = orphanedProducts.map(p => p.id);
       
@@ -61,7 +61,7 @@ async function cleanupOrphanedProducts(tenantId?: string, shopDomain?: string) {
 
       console.log(`🧹 Cleaned up ${orphanedProducts.length} orphaned products`);
       
-      // Clear cache
+    
       await cacheDel(`products:${shopDomainToUse}`);
     }
 
@@ -84,7 +84,7 @@ async function cleanupOrphanedProducts(tenantId?: string, shopDomain?: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
+
     const auth = request.cookies.get("auth")?.value || "";
     const payload = auth ? await verifyJwt<{ tenantId: string }>(auth) : null;
     
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    // Perform cleanup
+
     const result = await cleanupOrphanedProducts(payload.tenantId);
 
     return NextResponse.json({
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify authentication
+
     const auth = request.cookies.get("auth")?.value || "";
     const payload = auth ? await verifyJwt<{ tenantId: string }>(auth) : null;
     
@@ -125,11 +125,11 @@ export async function GET(request: NextRequest) {
     const dryRun = params.get("dryRun") === "true";
 
     if (dryRun) {
-      // Just check for orphaned products without deleting
+
       let shopDomainToUse = process.env.SHOPIFY_SHOP_DOMAIN || "xeno-assignment-store.myshopify.com";
       let accessToken = process.env.SHOPIFY_ACCESS_TOKEN;
 
-      // Get tenant info
+
       const tenant = await prisma.tenant.findUnique({ 
         where: { id: payload.tenantId },
         select: { shopDomain: true, accessToken: true }
@@ -156,7 +156,7 @@ export async function GET(request: NextRequest) {
       const data = await response.json();
       const shopifyProductIds = new Set((data.products || []).map((p: { id: string | number }) => String(p.id)));
 
-      // Find orphaned products in database
+    
       const dbProducts = await prisma.product.findMany({
         where: { tenantId: payload.tenantId },
         select: { id: true, shopId: true, title: true, tenantId: true }

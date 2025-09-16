@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const results: Array<{ tenantId: string; abandoned: number }> = [];
 
     for (const t of tenants) {
-      // Get recent checkout/cart events
+      
       const events = await prisma.event.findMany({
         where: {
           tenantId: t.id,
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         take: 500,
       });
 
-      // Map by token or id
+      
       const sessions = new Map<string, { firstAt: number; lastAt: number; email: string | null; payload: CheckoutEventPayload }>();
 
       for (const ev of events) {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Fetch existing abandoned markers recently to avoid duplicates
+ 
       const recentAbandoned = await prisma.event.findMany({
         where: { tenantId: t.id, topic: "checkouts/abandoned", createdAt: { gte: since } },
         orderBy: { createdAt: "desc" },
@@ -86,12 +86,12 @@ export async function POST(request: NextRequest) {
         if (minutesSinceLast < thresholdMinutes) continue;
         if (abandonedTokens.has(token)) continue;
 
-        // If we can infer conversion via customer email, skip
+       
         if (info.email) {
           const customer = await prisma.customer.findFirst({ where: { tenantId: t.id, email: info.email } });
           if (customer) {
             const orderCount = await prisma.order.count({ where: { tenantId: t.id, customerId: customer.id, processedAt: { gte: new Date(info.firstAt) } } });
-            if (orderCount > 0) continue; // converted
+            if (orderCount > 0) continue; 
           }
         }
 

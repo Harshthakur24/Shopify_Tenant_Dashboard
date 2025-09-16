@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get authentication token from cookies
+   
     const token = request.cookies.get('auth')?.value;
     
     if (!token) {
