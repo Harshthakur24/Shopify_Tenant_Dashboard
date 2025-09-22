@@ -176,43 +176,7 @@ export default function LoginPage() {
                         </button>
                     </form>
 
-                    <div className="mt-6 rounded-xl border-2 border-violet-100 bg-white/80 p-4">
-                        <p className="mb-3 text-sm font-semibold text-neutral-800">Demo credentials</p>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="truncate">
-                                    <span className="text-neutral-500">Email:</span>
-                                    <span className="ml-2 font-medium text-neutral-800">thakur2004harsh@gmail.com</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        await navigator.clipboard.writeText("thakur2004harsh@gmail.com");
-                                        toast.success("Email copied");
-                                    }}
-                                    className="whitespace-nowrap rounded-lg border border-violet-200 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-50 hover:cursor-pointer"
-                                >
-                                    Copy
-                                </button>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="truncate">
-                                    <span className="text-neutral-500">Password:</span>
-                                    <span className="ml-2 font-medium text-neutral-800">jamthakurharsh</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        await navigator.clipboard.writeText("jamthakurharsh");
-                                        toast.success("Password copied");
-                                    }}
-                                    className="whitespace-nowrap rounded-lg border border-violet-200 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-50 hover:cursor-pointer"
-                                >
-                                    Copy
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+
 
                     <div className="mt-8 text-center">
                         <p className="text-sm text-neutral-600">
